@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantalla de Proyección</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #00ff00;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        .screen-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: #00ff00;
+        }
+        .logo {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            max-width: 100px;
+            max-height: 60px;
+            z-index: 50;
+        }
+        .qr {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 30px;
+            max-width: 100px;
+            max-height: 100px;
+            z-index: 50;
+        }
+        .carousel-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .carousel-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            padding: 40px;
+        }
+        .carousel-item.active {
+            opacity: 1;
+        }
+        .carousel-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .carousel-message {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            font-size: 3rem;
+            text-align: center;
+            width: 90%;
+            line-height: 1.4;
+        }
+        .event-title {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            z-index: 40;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        /* Modo pantalla completa */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 200;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .fullscreen-btn:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            opacity: 1;
+        }
+        .screen-container:hover .fullscreen-btn {
+            opacity: 0.7;
+        }
+        /* Overlay de carga inicial */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease-out;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #333;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 1.5rem;
+            color: #3498db;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .loading-subtext {
+            font-size: 1rem;
+            color: #aaa;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+        @media (max-width: 768px) {
+            .carousel-message {
+                font-size: 2rem;
+                padding: 20px;
+            }
+            
+            .event-title {
+                font-size: 1.5rem;
+            }
+            
+            .logo, .qr {
+                max-width: 70px;
+            }
+            
+            .loading-text {
+                font-size: 1.2rem;
+            }
+            
+            .loading-subtext {
+                font-size: 0.9rem;
+                padding: 0 20px;
+            }
+        }
+        /* Animación suave para contenido nuevo */
+        @keyframes subtleFadeIn {
+            from { opacity: 0.95; }
+            to { opacity: 1; }
+        }
+        .content-updated {
+            animation: subtleFadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-container" id="screen-container">
+        <!-- Botón pantalla completa (solo visible al pasar mouse) -->
+        <button class="fullscreen-btn" id="fullscreen-btn" title="Pantalla completa (F)">
+            <span id="fullscreen-icon">⛶</span>
+        </button>
+        
+        <!-- Logo -->
+        <img id="logo" class="logo" src="" alt="Logo del evento">
+        
+        <!-- Código QR -->
+        <img id="qr" class="qr" src="" alt="Código QR">
+        
+        <!-- Carrusel -->
+        <div class="carousel-container" id="carousel-container">
+            <div class="carousel-item active" id="welcome-message">
+                <div class="carousel-message">
+                    Cargando Contenido<br>
+                    <div style="font-size: 1.5rem; margin-top: 20px;">
+                        Esperando sus fotos y mensajes
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Título del evento -->
+        <div class="event-title" id="event-title">Envianos tus fotos</div>
+        
+        <!-- Overlay de carga inicial -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Conectando al servidor...</div>
+            <div class="loading-subtext">
+                Esta pantalla mostrará automáticamente las fotos y mensajes<br>
+                cargados desde el panel de administración
+            </div>
+        </div>
+    </div>
+    <script>
+        // Variables globales para la pantalla
+        let carouselItems = [];
+        let currentItemIndex = 0;
+        let carouselInterval;
+        let logoImage = '';
+        let qrImage = '';
+        let eventTitle = 'Envianos tus fotos';
+        let slideDuration = 5000; // 5 segundos por defecto
+        let ws = null;
+        let reconnectTimeout = null;
+        let isConnected = false;
+        // Elementos DOM
+        const carouselContainer = document.getElementById('carousel-container');
+        const logoElement = document.getElementById('logo');
+        const qrElement = document.getElementById('qr');
+        const eventTitleElement = document.getElementById('event-title');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const fullscreenIcon = document.getElementById('fullscreen-icon');
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar pantalla completa
+            setupFullscreen();
+            
+            // Conectar al servidor WebSocket
+            connectWebSocket();
+            
+            // Verificar datos locales
+            checkLocalData();
+            
+            // Ocultar overlay después de 3 segundos si hay contenido
+            setTimeout(() => {
+                if (carouselItems.length > 0) {
+                    hideLoadingOverlay();
+                }
+            }, 3000);
+            
+            // Iniciar el carrusel automáticamente si hay contenido
+            startCarouselIfContent();
+            
+            // Configurar atajos de teclado
+            setupKeyboardShortcuts();
+        });
+        // Conectar WebSocket
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.hostname}:3001`;
+            
+            console.log('Conectando a WebSocket:', wsUrl);
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('✅ WebSocket conectado');
+                isConnected = true;
+                hideLoadingOverlay();
+                
+                // Solicitar contenido actual
+                ws.send(JSON.stringify({
+                    type: 'client_ready',
+                    timestamp: Date.now()
+                }));
+            };
+            
+            ws.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                } catch (e) {
+                    console.error('❌ Error procesando mensaje:', e);
+                }
+            };
+            
+            ws.onclose = function() {
+                console.log('⚠️ WebSocket desconectado');
+                isConnected = false;
+                loadingOverlay.style.display = 'flex';
+                loadingOverlay.classList.remove('hidden');
+                loadingOverlay.querySelector('.loading-text').textContent = 'Desconectado. Reconectando...';
+                
+                // Reconectar después de 3 segundos
+                if (!reconnectTimeout) {
+                    reconnectTimeout = setTimeout(connectWebSocket, 3000);
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error('❌ Error WebSocket:', error);
+            };
+        }
+        // Manejar mensajes WebSocket
+        function handleWebSocketMessage(data) {
+            console.log('📨 Mensaje recibido:', data.type);
+            
+            switch (data.type) {
+                case 'content_update':
+                    console.log('🔄 Actualizando contenido:', {
+                        totalItems: data.content.items ? data.content.items.length : 0,
+                        tieneLogo: !!data.content.logo,
+                        tieneQR: !!data.content.qr
+                    });
+                    
+                    // Actualizar contenido
+                    updateContent(data.content);
+                    break;
+                    
+                case 'ping':
+                    // Responder al ping silenciosamente
+                    ws.send(JSON.stringify({ type: 'pong', timestamp: data.timestamp }));
+                    break;
+                    
+                case 'client_id':
+                    console.log('🆔 ID Cliente asignado:', data.clientId);
+                    break;
+                    
+                case 'server_info':
+                    console.log('🌐 Información del servidor:', data.ip);
+                    break;
+            }
+        }
+        // Actualizar contenido
+        function updateContent(content) {
+            console.log('🔄 Iniciando updateContent...');
+            
+            // Guardar los datos nuevos
+            carouselItems = content.items || [];
+            logoImage = content.logo || '';
+            qrImage = content.qr || '';
+            eventTitle = content.eventTitle || 'Envianos tus fotos';
+            slideDuration = (content.slideDuration || 5) * 1000;
+            
+            console.log('📊 Datos recibidos:', {
+                totalItems: carouselItems.length,
+                mensajes: carouselItems.filter(item => item.type === 'message').length,
+                fotos: carouselItems.filter(item => item.type === 'image').length
+            });
+            
+            // Actualizar UI
+            updateUI();
+            
+            // Guardar localmente
+            saveLocalData();
+            
+            // Reiniciar carrusel
+            restartCarousel();
+            
+            // Ocultar overlay si está visible
+            hideLoadingOverlay();
+            
+            console.log('✅ Contenido actualizado correctamente');
+        }
+        // Actualizar UI
+        function updateUI() {
+            console.log('🎨 Actualizando UI...');
+            
+            // Logo
+            if (logoImage) {
+                logoElement.src = logoImage;
+                logoElement.style.display = 'block';
+                console.log('✅ Logo actualizado');
+            } else {
+                logoElement.style.display = 'none';
+                console.log('ℹ️ Sin logo');
+            }
+            
+            // QR
+            if (qrImage) {
+                qrElement.src = qrImage;
+                qrElement.style.display = 'block';
+                console.log('✅ QR actualizado');
+            } else {
+                qrElement.style.display = 'none';
+                console.log('ℹ️ Sin QR');
+            }
+            
+            // Título del evento
+            eventTitleElement.textContent = eventTitle;
+            console.log('✅ Título actualizado:', eventTitle);
+            
+            // Reconstruir carrusel
+            rebuildCarousel();
+            
+            // Añadir animación sutil
+            carouselContainer.classList.add('content-updated');
+            setTimeout(() => {
+                carouselContainer.classList.remove('content-updated');
+            }, 500);
+            
+            console.log('✅ UI actualizada completamente');
+        }
+        // Reconstruir carrusel (FUNCIÓN CRÍTICA CORREGIDA)
+        function rebuildCarousel() {
+            console.log('🔄 Reconstruyendo carrusel...');
+            
+            // Limpiar carrusel COMPLETAMENTE
+            carouselContainer.innerHTML = '';
+            
+            // Si no hay elementos, mostrar mensaje de bienvenida
+            if (carouselItems.length === 0) {
+                console.log('ℹ️ No hay elementos, mostrando mensaje de bienvenida');
+                const welcomeElement = document.createElement('div');
+                welcomeElement.className = 'carousel-item active';
+                welcomeElement.id = 'welcome-message';
+                welcomeElement.innerHTML = `
+                    <div class="carousel-message">
+                        Cargando Contenido<br>
+                        <div style="font-size: 1.5rem; margin-top: 20px;">
+                            Esperando sus fotos y mensajes
+                        </div>
+                    </div>
+                `;
+                carouselContainer.appendChild(welcomeElement);
+                return;
+            }
+            
+            console.log(`➕ Creando ${carouselItems.length} elementos del carrusel`);
+            
+            // Crear TODOS los elementos del carrusel
+            carouselItems.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'carousel-item';
+                if (index === 0) {
+                    itemElement.classList.add('active');
+                    console.log('▶️ Primer elemento activo:', 
+                        item.type === 'message' ? 
+                        `Mensaje: "${item.content.substring(0, 50)}..."` : 
+                        `Imagen: ${item.name || 'Sin nombre'}`);
+                }
+                itemElement.dataset.id = item.id || `item_${index}`;
+                
+                if (item.type === 'image') {
+                    itemElement.innerHTML = `<img src="${item.content}" class="carousel-img" alt="${item.name || 'Imagen'}">`;
+                    console.log(`🖼️  Imagen ${index + 1} añadida`);
+                } else {
+                    itemElement.innerHTML = `<div class="carousel-message">${item.content}</div>`;
+                    console.log(`💬 Mensaje ${index + 1} añadido: "${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}"`);
+                }
+                
+                carouselContainer.appendChild(itemElement);
+            });
+            
+            console.log('✅ Carrusel reconstruido exitosamente');
+        }
+        // Funciones del carrusel
+        function startCarousel() {
+            console.log('▶️ Iniciando carrusel...');
+            stopCarousel();
+            
+            if (carouselItems.length <= 1) {
+                console.log('ℹ️ No hay suficientes elementos para carrusel');
+                return;
+            }
+            
+            carouselInterval = setInterval(nextCarouselItem, slideDuration);
+            console.log(`⏱️  Carrusel iniciado (${slideDuration}ms por slide)`);
+        }
+        function stopCarousel() {
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+                console.log('⏸️  Carrusel detenido');
+            }
+        }
+        function restartCarousel() {
+            console.log('🔄 Reiniciando carrusel...');
+            stopCarousel();
+            
+            if (carouselItems.length > 1) {
+                currentItemIndex = 0;
+                startCarousel();
+                console.log('✅ Carrusel reiniciado con múltiples elementos');
+            } else if (carouselItems.length === 1) {
+                showCarouselItem(0);
+                console.log('✅ Mostrando único elemento');
+            } else {
+                console.log('ℹ️ No hay elementos para mostrar');
+            }
+        }
+        function nextCarouselItem() {
+            if (carouselItems.length <= 1) return;
+            
+            const currentItem = document.querySelector('.carousel-item.active');
+            if (currentItem) {
+                currentItem.classList.remove('active');
+            }
+            
+            currentItemIndex = (currentItemIndex + 1) % carouselItems.length;
+            showCarouselItem(currentItemIndex);
+        }
+        function showCarouselItem(index) {
+            const items = document.querySelectorAll('.carousel-item');
+            if (items[index]) {
+                items[index].classList.add('active');
+            }
+        }
+        function startCarouselIfContent() {
+            if (carouselItems.length > 0) {
+                restartCarousel();
+                hideLoadingOverlay();
+                console.log('✅ Carrusel iniciado automáticamente con contenido local');
+            }
+        }
+        // Ocultar overlay de carga
+        function hideLoadingOverlay() {
+            console.log('👁️  Ocultando overlay de carga...');
+            loadingOverlay.classList.add('hidden');
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                console.log('✅ Overlay ocultado');
+            }, 1000);
+        }
+        // Pantalla completa
+        function setupFullscreen() {
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    fullscreenIcon.textContent = '⛶';
+                    fullscreenBtn.innerHTML = '<span id="fullscreen-icon">⛶</span>';
+                    console.log('🖥️  Entrando en pantalla completa');
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        fullscreenIcon.textContent = '⛶';
+                        fullscreenBtn.innerHTML = '<span id="fullscreen-icon">⛶</span>';
+                        console.log('📱 Saliendo de pantalla completa');
+                    }
+                }
+            }
+            
+            document.addEventListener('fullscreenchange', function() {
+                if (!document.fullscreenElement) {
+                    fullscreenIcon.textContent = '⛶';
+                    fullscreenBtn.innerHTML = '<span id="fullscreen-icon">⛶</span>';
+                }
+            });
+        }
+        // Atajos de teclado
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // F para pantalla completa
+                if (e.code === 'KeyF') {
+                    fullscreenBtn.click();
+                    e.preventDefault();
+                    console.log('⌨️  Atajo: F - Pantalla completa');
+                }
+                // Espacio para pausar/reanudar carrusel
+                else if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (carouselInterval) {
+                        stopCarousel();
+                        console.log('⌨️  Atajo: Espacio - Carrusel pausado');
+                    } else {
+                        startCarousel();
+                        console.log('⌨️  Atajo: Espacio - Carrusel reanudado');
+                    }
+                }
+                // Flecha derecha para siguiente
+                else if (e.code === 'ArrowRight') {
+                    e.preventDefault();
+                    nextCarouselItem();
+                    console.log('⌨️  Atajo: Flecha derecha - Siguiente slide');
+                }
+                // Flecha izquierda para anterior
+                else if (e.code === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (carouselItems.length <= 1) return;
+                    
+                    const currentItem = document.querySelector('.carousel-item.active');
+                    if (currentItem) {
+                        currentItem.classList.remove('active');
+                    }
+                    
+                    currentItemIndex = (currentItemIndex - 1 + carouselItems.length) % carouselItems.length;
+                    showCarouselItem(currentItemIndex);
+                    console.log('⌨️  Atajo: Flecha izquierda - Anterior slide');
+                }
+                // Escape para salir de pantalla completa
+                else if (e.code === 'Escape') {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                        console.log('⌨️  Atajo: Escape - Salir pantalla completa');
+                    }
+                }
+                // R para recargar (con Ctrl)
+                else if (e.code === 'KeyR' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    location.reload();
+                    console.log('⌨️  Atajo: Ctrl+R - Recargar página');
+                }
+            });
+        }
+        // Guardar en localStorage
+        function saveLocalData() {
+            const dataToSave = {
+                carouselItems: carouselItems,
+                logoImage: logoImage,
+                qrImage: qrImage,
+                eventTitle: eventTitle,
+                slideDuration: slideDuration,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('screenData', JSON.stringify(dataToSave));
+            console.log('💾 Datos guardados en localStorage');
+        }
+        // Cargar desde localStorage
+        function checkLocalData() {
+            const savedData = localStorage.getItem('screenData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    const hoursSinceUpdate = (Date.now() - data.timestamp) / (1000 * 60 * 60);
+                    
+                    // Usar datos guardados si tienen menos de 1 hora
+                    if (hoursSinceUpdate < 1) {
+                        console.log('📂 Cargando datos locales...');
+                        updateContent({
+                            items: data.carouselItems,
+                            logo: data.logoImage,
+                            qr: data.qrImage,
+                            eventTitle: data.eventTitle,
+                            slideDuration: data.slideDuration / 1000
+                        });
+                        console.log('✅ Datos locales cargados');
+                    } else {
+                        console.log('ℹ️ Datos locales demasiado antiguos');
+                    }
+                } catch (e) {
+                    console.error('❌ Error cargando datos locales:', e);
+                }
+            } else {
+                console.log('ℹ️ No hay datos locales guardados');
+            }
+        }
+        // Manejar cambios de visibilidad de página
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && carouselInterval) {
+                console.log('🔍 Página visible nuevamente, reiniciando carrusel');
+                restartCarousel();
+            }
+        });
+        // Manejar conexión/desconexión de red
+        window.addEventListener('online', function() {
+            console.log('🌐 Conexión restablecida');
+            if (!isConnected) {
+                console.log('🔄 Intentando reconectar WebSocket...');
+                connectWebSocket();
+            }
+        });
+        window.addEventListener('offline', function() {
+            console.log('⚠️  Conexión perdida, usando contenido local');
+            // Continuar mostrando contenido local si se pierde conexión
+        });
+        // Auto-reconexión periódica
+        setInterval(() => {
+            if (!isConnected && navigator.onLine) {
+                console.log('🔄 Intentando reconexión automática...');
+                connectWebSocket();
+            }
+        }, 10000); // Cada 10 segundos
+        // Depuración: Mostrar estado actual
+        console.log('🚀 Pantalla de proyección inicializada');
+        console.log('📊 Estado inicial:', {
+            itemsEnCarrusel: carouselItems.length,
+            tieneConexion: isConnected,
+            url: window.location.href
+        });
+    </script>
+</body>
+</html>

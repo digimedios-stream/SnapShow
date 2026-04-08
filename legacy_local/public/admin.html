@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador - Carga de Contenido</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+        }
+
+        .btn-success:hover {
+            background-color: #219653;
+        }
+
+        .btn-warning {
+            background-color: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background-color: #d68910;
+        }
+
+        .screen-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            font-weight: 500;
+        }
+
+        .content-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            transition: transform 0.3s;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2 i {
+            color: #3498db;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: #f8fafc;
+        }
+
+        .upload-area:hover {
+            background-color: #e8f4fc;
+            border-color: #2980b9;
+        }
+
+        .upload-area i {
+            font-size: 3rem;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .upload-area small {
+            color: #777;
+            display: block;
+        }
+
+        /* Vista previa en tiempo real */
+        .live-preview {
+            background-color: #111;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+            margin-top: 20px;
+        }
+
+        .screen-header {
+            background-color: #222;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .screen-content {
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+
+        .carousel-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 1s;
+            padding: 20px;
+        }
+
+        .carousel-item.active {
+            opacity: 1;
+        }
+
+        .carousel-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .carousel-message {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            font-size: 1.8rem;
+            text-align: center;
+            width: 90%;
+        }
+
+        .event-title {
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+
+        .preview-logo {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            max-width: 80px;
+            max-height: 50px;
+            z-index: 10;
+        }
+
+        .preview-qr {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            max-width: 80px;
+            max-height: 80px;
+            z-index: 10;
+        }
+
+        /* Elementos cargados */
+        .uploaded-items-container {
+            margin-top: 30px;
+        }
+
+        .uploaded-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .uploaded-item {
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .uploaded-item:hover {
+            transform: scale(1.03);
+        }
+
+        .uploaded-item img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .uploaded-message {
+            padding: 15px;
+            background-color: #f8f9fa;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .item-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .item-actions button {
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .item-actions button:hover {
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        /* Estadísticas */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .stat-icon.photo {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .stat-icon.message {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: #777;
+            font-weight: 500;
+        }
+
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success {
+            background-color: #27ae60;
+            display: block;
+        }
+
+        .notification.error {
+            background-color: #e74c3c;
+            display: block;
+        }
+
+        .notification.info {
+            background-color: #3498db;
+            display: block;
+        }
+
+        /* Sección Red Local */
+        .network-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .network-section h2 {
+            color: white;
+            border-bottom-color: rgba(255,255,255,0.3);
+        }
+
+        .url-display {
+            background-color: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.95rem;
+            word-break: break-all;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #e74c3c;
+        }
+
+        .status-dot.connected {
+            background-color: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-tv"></i> Panel de Administración - Pantalla Gigante</h1>
+            <p>Carga fotos y mensajes que aparecerán en tiempo real en la pantalla de proyección</p>
+        </div>
+
+        <!-- Controles principales -->
+        <div class="controls">
+            <div class="screen-info">
+                <i class="fas fa-external-link-alt"></i> 
+                Pantalla de proyección: <a href="/pantalla" id="screen-link" target="_blank" style="color: #3498db; text-decoration: none; margin-left: 5px;">Abrir pantalla</a>
+                <span style="margin-left: 15px; color: #27ae60;">
+                    <i class="fas fa-circle" style="font-size: 0.7rem;"></i> Servidor activo
+                </span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-warning" id="refresh-screen">
+                    <i class="fas fa-sync-alt"></i> Actualizar Pantalla
+                </button>
+                <button class="btn btn-success" id="save-all">
+                    <i class="fas fa-save"></i> Guardar Todo
+                </button>
+            </div>
+        </div>
+
+        <!-- Secciones de contenido -->
+        <div class="content-sections">
+            <!-- Sección para cargar fotos -->
+            <div class="section">
+                <h2><i class="fas fa-camera"></i> Cargar Fotos</h2>
+                <div class="form-group">
+                    <div class="upload-area" id="photo-upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Haz clic o arrastra fotos aquí</p>
+                        <small>Formatos: JPG, PNG, GIF. Máx. 5MB por imagen</small>
+                        <input type="file" id="upload-photos" accept="image/*" multiple style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="uploaded-items-container">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 10px;">Fotos cargadas:</h3>
+                    <div class="uploaded-items" id="photo-items">
+                        <!-- Las fotos cargadas aparecerán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección para mensajes -->
+            <div class="section">
+                <h2><i class="fas fa-comment-alt"></i> Agregar Mensajes</h2>
+                <div class="form-group">
+                    <label for="message-text">Nuevo mensaje/saludo:</label>
+                    <textarea id="message-text" class="form-control" placeholder="Escribe un mensaje para mostrar en la pantalla..."></textarea>
+                </div>
+                <button class="btn" id="add-message" style="width: 100%;">
+                    <i class="fas fa-plus-circle"></i> Agregar Mensaje al Carrusel
+                </button>
+                
+                <div class="uploaded-items-container">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 10px; margin-top: 20px;">Mensajes cargados:</h3>
+                    <div class="uploaded-items" id="message-items">
+                        <!-- Los mensajes cargados aparecerán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personalización -->
+            <div class="section">
+                <h2><i class="fas fa-palette"></i> Personalizar Pantalla</h2>
+                <div class="form-group">
+                    <label for="event-title">Título del Evento</label>
+                    <input type="text" id="event-title" class="form-control" placeholder="Ej: La boda de Juan y María" value="La boda de Juan y María">
+                </div>
+                
+                <div class="row" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <div style="flex: 1;">
+                        <label for="upload-logo">Logo</label>
+                        <input type="file" id="upload-logo" class="form-control" accept="image/*">
+                        <small style="display: block; margin-top: 5px;">Esquina superior izquierda</small>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="upload-qr">Código QR</label>
+                        <input type="file" id="upload-qr" class="form-control" accept="image/*">
+                        <small style="display: block; margin-top: 5px;">Esquina inferior derecha</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="slide-duration">Tiempo por slide (segundos)</label>
+                    <select id="slide-duration" class="form-control">
+                        <option value="3">3 segundos</option>
+                        <option value="5" selected>5 segundos</option>
+                        <option value="8">8 segundos</option>
+                        <option value="10">10 segundos</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista previa en tiempo real -->
+        <div class="content-sections">
+            <div class="section" style="grid-column: 1 / -1;">
+                <h2><i class="fas fa-eye"></i> Vista Previa en Vivo</h2>
+                <p style="margin-bottom: 15px; color: #666;">Previsualización de cómo se verá en la pantalla gigante</p>
+                
+                <div class="live-preview">
+                    <div class="screen-header">
+                        <span>Pantalla de Proyección - Modo Carrusel</span>
+                        <span id="current-time">00:00</span>
+                    </div>
+                    
+                    <!-- Logo en vista previa -->
+                    <img id="preview-logo" class="preview-logo" src="" alt="Logo">
+                    
+                    <!-- Contenido del carrusel -->
+                    <div class="screen-content" id="carousel-preview">
+                        <div class="carousel-item active">
+                            <div class="carousel-message">
+                                Bienvenidos al evento<br>
+                                <span id="preview-event-title">La boda de Juan y María</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR en vista previa -->
+                    <img id="preview-qr" class="preview-qr" src="" alt="QR">
+                    
+                    <div class="event-title" id="preview-title">La boda de Juan y María</div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn" id="start-preview">
+                        <i class="fas fa-play"></i> Iniciar Vista Previa
+                    </button>
+                    <button class="btn" id="stop-preview" style="margin-left: 10px; background-color: #e74c3c;">
+                        <i class="fas fa-stop"></i> Detener
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección Red Local -->
+        <div class="network-section">
+            <h2><i class="fas fa-network-wired"></i> Red Local</h2>
+            
+            <div class="server-status">
+                <div class="status-dot connected" id="server-status-dot"></div>
+                <div>
+                    <div id="server-status-text">Servidor conectado</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Clientes: <span id="connected-clients">0</span> conectados</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>URLs de Acceso:</label>
+                <div class="url-display" id="admin-url">
+                    http://localhost:3000/admin
+                </div>
+                <div class="url-display" id="screen-url">
+                    http://localhost:3000/pantalla
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; font-size: 0.95rem; opacity: 0.9;">
+                <p><strong>Para proyectar en otros dispositivos:</strong></p>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Conéctalos a la misma red WiFi</li>
+                    <li>Abre el navegador y visita la URL de pantalla</li>
+                    <li>El contenido se actualizará automáticamente</li>
+                </ol>
+            </div>
+            
+            <button class="btn" id="broadcast-update" style="width: 100%; margin-top: 20px; background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+                <i class="fas fa-satellite"></i> Enviar a Todas las Pantallas
+            </button>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-icon photo">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="photo-count">0</h3>
+                    <p>Fotos cargadas</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon message">
+                    <i class="fas fa-comment-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="message-count">0</h3>
+                    <p>Mensajes cargados</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: rgba(155, 89, 182, 0.1); color: #9b59b6;">
+                    <i class="fas fa-images"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="total-count">1</h3>
+                    <p>Total en carrusel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Variables globales
+        let carouselItems = [
+            { type: 'message', content: 'Bienvenidos al evento<br><span id="preview-event-title">La boda de Juan y María</span>', id: 1, timestamp: Date.now() }
+        ];
+        let currentPreviewIndex = 0;
+        let previewInterval;
+        let logoImage = null;
+        let qrImage = null;
+        let eventTitle = "La boda de Juan y María";
+        let itemIdCounter = 2;
+        let wsConnection = null;
+        let serverIP = 'localhost';
+
+        // Elementos DOM
+        const notification = document.getElementById('notification');
+        const photoItemsContainer = document.getElementById('photo-items');
+        const messageItemsContainer = document.getElementById('message-items');
+        const carouselPreview = document.getElementById('carousel-preview');
+        const previewLogo = document.getElementById('preview-logo');
+        const previewQr = document.getElementById('preview-qr');
+        const previewTitle = document.getElementById('preview-title');
+        const photoCount = document.getElementById('photo-count');
+        const messageCount = document.getElementById('message-count');
+        const totalCount = document.getElementById('total-count');
+        const connectedClients = document.getElementById('connected-clients');
+
+        // Configuración inicial
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar áreas de subida
+            setupUploadArea('photo-upload-area', 'upload-photos');
+            
+            // Configurar subida de fotos
+            document.getElementById('upload-photos').addEventListener('change', handlePhotoUpload);
+            
+            // Configurar agregar mensaje
+            document.getElementById('add-message').addEventListener('click', addMessageFromInput);
+            
+            // Configurar logo
+            document.getElementById('upload-logo').addEventListener('change', handleLogoUpload);
+            
+            // Configurar QR
+            document.getElementById('upload-qr').addEventListener('change', handleQRUpload);
+            
+            // Configurar título del evento
+            document.getElementById('event-title').addEventListener('input', function() {
+                eventTitle = this.value;
+                previewTitle.textContent = eventTitle;
+                updateCarouselItem(1, `Bienvenidos al evento<br><span id="preview-event-title">${eventTitle}</span>`);
+                broadcastUpdate();
+                showNotification('Título del evento actualizado', 'success');
+            });
+            
+            // Configurar controles de vista previa
+            document.getElementById('start-preview').addEventListener('click', startPreview);
+            document.getElementById('stop-preview').addEventListener('click', stopPreview);
+            
+            // Configurar guardar cambios
+            document.getElementById('save-all').addEventListener('click', saveAllChanges);
+            
+            // Configurar actualizar pantalla
+            document.getElementById('refresh-screen').addEventListener('click', refreshScreen);
+            
+            // Configurar broadcast
+            document.getElementById('broadcast-update').addEventListener('click', function() {
+                broadcastUpdate();
+                showNotification('Actualizando todas las pantallas...', 'info');
+            });
+            
+            // Configurar enlace a pantalla
+            document.getElementById('screen-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.open('/pantalla', '_blank');
+            });
+            
+            // Conectar al servidor WebSocket
+            connectToServer();
+            
+            // Cargar datos guardados
+            loadSavedData();
+            
+            // Inicializar estadísticas
+            updateStats();
+            
+            // Actualizar hora actual
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000);
+            
+            // Actualizar URLs con IP local
+            detectLocalIP();
+        });
+
+        // Funciones para manejar subida de archivos
+        function setupUploadArea(areaId, inputId) {
+            const area = document.getElementById(areaId);
+            const input = document.getElementById(inputId);
+            
+            area.addEventListener('click', () => input.click());
+            
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.style.backgroundColor = '#e8f4fc';
+                area.style.borderColor = '#2980b9';
+            });
+            
+            area.addEventListener('dragleave', () => {
+                area.style.backgroundColor = '#f8fafc';
+                area.style.borderColor = '#3498db';
+            });
+            
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.style.backgroundColor = '#f8fafc';
+                area.style.borderColor = '#3498db';
+                
+                if (inputId === 'upload-photos') {
+                    input.files = e.dataTransfer.files;
+                    handlePhotoUpload({ target: input });
+                }
+            });
+        }
+
+        function handlePhotoUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+            
+            let uploadedCount = 0;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith('image/')) {
+                    showNotification(`El archivo "${file.name}" no es una imagen válida`, 'error');
+                    continue;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification(`La imagen "${file.name}" es demasiado grande (máx. 5MB)`, 'error');
+                    continue;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const item = {
+                        type: 'image',
+                        content: e.target.result,
+                        id: itemIdCounter++,
+                        name: file.name,
+                        timestamp: Date.now()
+                    };
+                    
+                    carouselItems.push(item);
+                    addUploadedItem(item, photoItemsContainer);
+                    updateStats();
+                    broadcastUpdate();
+                    
+                    uploadedCount++;
+                    if (uploadedCount === files.length) {
+                        showNotification(`${uploadedCount} foto(s) cargada(s) correctamente`, 'success');
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // Resetear input
+            event.target.value = '';
+        }
+
+        function addMessageFromInput() {
+            const messageInput = document.getElementById('message-text');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showNotification('Por favor, escribe un mensaje', 'error');
+                return;
+            }
+            
+            const item = {
+                type: 'message',
+                content: message,
+                id: itemIdCounter++,
+                timestamp: Date.now()
+            };
+            
+            carouselItems.push(item);
+            addUploadedItem(item, messageItemsContainer);
+            updateStats();
+            broadcastUpdate();
+            showNotification('Mensaje agregado correctamente', 'success');
+            
+            // Limpiar input
+            messageInput.value = '';
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                showNotification('El archivo no es una imagen válida', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                logoImage = e.target.result;
+                previewLogo.src = logoImage;
+                broadcastUpdate();
+                showNotification('Logo actualizado', 'success');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function handleQRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                showNotification('El archivo no es una imagen válida', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                qrImage = e.target.result;
+                previewQr.src = qrImage;
+                broadcastUpdate();
+                showNotification('Código QR actualizado', 'success');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        // Funciones para gestionar elementos cargados
+        function addUploadedItem(item, container) {
+            const itemElement = document.createElement('div');
+            itemElement.className = 'uploaded-item';
+            itemElement.dataset.id = item.id;
+            
+            let contentHTML = '';
+            
+            if (item.type === 'image') {
+                contentHTML = `<img src="${item.content}" alt="${item.name || 'Imagen'}">`;
+            } else {
+                contentHTML = `<div class="uploaded-message">${item.content}</div>`;
+            }
+            
+            itemElement.innerHTML = `
+                ${contentHTML}
+                <div class="item-actions">
+                    <button onclick="deleteItem(${item.id})" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(itemElement);
+        }
+
+        function deleteItem(id) {
+            const index = carouselItems.findIndex(item => item.id === id);
+            if (index === -1) return;
+            
+            const item = carouselItems[index];
+            carouselItems.splice(index, 1);
+            
+            // Eliminar del DOM
+            const itemElement = document.querySelector(`.uploaded-item[data-id="${id}"]`);
+            if (itemElement) {
+                itemElement.remove();
+            }
+            
+            updateStats();
+            broadcastUpdate();
+            showNotification('Elemento eliminado', 'success');
+        }
+
+        // Funciones para el carrusel de vista previa
+        function startPreview() {
+            if (carouselItems.length === 0) {
+                showNotification('No hay contenido para mostrar', 'error');
+                return;
+            }
+            
+            stopPreview(); // Detener cualquier intervalo existente
+            
+            // Configurar intervalo
+            const duration = parseInt(document.getElementById('slide-duration').value) * 1000;
+            previewInterval = setInterval(nextPreviewItem, duration);
+            
+            // Mostrar primer elemento
+            showPreviewItem(currentPreviewIndex);
+            
+            document.getElementById('start-preview').disabled = true;
+            document.getElementById('stop-preview').disabled = false;
+            
+            showNotification('Vista previa iniciada', 'success');
+        }
+
+        function stopPreview() {
+            if (previewInterval) {
+                clearInterval(previewInterval);
+                previewInterval = null;
+            }
+            
+            document.getElementById('start-preview').disabled = false;
+            document.getElementById('stop-preview').disabled = true;
+            
+            showNotification('Vista previa detenida', 'success');
+        }
+
+        function nextPreviewItem() {
+            currentPreviewIndex = (currentPreviewIndex + 1) % carouselItems.length;
+            showPreviewItem(currentPreviewIndex);
+        }
+
+        function showPreviewItem(index) {
+            // Ocultar todos los elementos
+            const items = carouselPreview.querySelectorAll('.carousel-item');
+            items.forEach(item => item.classList.remove('active'));
+            
+            // Crear elemento si no existe
+            let itemElement = carouselPreview.querySelector(`[data-preview-id="${carouselItems[index].id}"]`);
+            
+            if (!itemElement) {
+                itemElement = document.createElement('div');
+                itemElement.className = 'carousel-item';
+                itemElement.dataset.previewId = carouselItems[index].id;
+                
+                const item = carouselItems[index];
+                
+                if (item.type === 'image') {
+                    itemElement.innerHTML = `<img src="${item.content}" class="carousel-img" alt="Imagen">`;
+                } else {
+                    itemElement.innerHTML = `<div class="carousel-message">${item.content}</div>`;
+                }
+                
+                carouselPreview.appendChild(itemElement);
+            }
+            
+            // Mostrar elemento actual
+            itemElement.classList.add('active');
+        }
+
+        function updateCarouselItem(id, newContent) {
+            const index = carouselItems.findIndex(item => item.id === id);
+            if (index !== -1) {
+                carouselItems[index].content = newContent;
+                
+                // Actualizar en la vista previa si está visible
+                const itemElement = carouselPreview.querySelector(`[data-preview-id="${id}"]`);
+                if (itemElement) {
+                    if (carouselItems[index].type === 'message') {
+                        itemElement.querySelector('.carousel-message').innerHTML = newContent;
+                    }
+                }
+            }
+        }
+
+        // Funciones para comunicación con servidor
+        function connectToServer() {
+            const wsUrl = `ws://${serverIP}:3001`;
+            
+            wsConnection = new WebSocket(wsUrl);
+            
+            wsConnection.onopen = function() {
+                console.log('Conectado al servidor WebSocket');
+                updateServerStatus(true);
+                
+                // Registrarse como administrador
+                wsConnection.send(JSON.stringify({
+                    type: 'set_admin',
+                    timestamp: Date.now()
+                }));
+            };
+            
+            wsConnection.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleServerMessage(data);
+                } catch (e) {
+                    console.error('Error procesando mensaje del servidor:', e);
+                }
+            };
+            
+            wsConnection.onclose = function() {
+                console.log('Desconectado del servidor');
+                updateServerStatus(false);
+                
+                // Intentar reconectar después de 3 segundos
+                setTimeout(connectToServer, 3000);
+            };
+            
+            wsConnection.onerror = function(error) {
+                console.error('Error WebSocket:', error);
+            };
+        }
+
+        function handleServerMessage(data) {
+            switch (data.type) {
+                case 'server_info':
+                    serverIP = data.ip;
+                    updateURLs(data.ip);
+                    break;
+                    
+                case 'client_connected':
+                case 'client_disconnected':
+                    connectedClients.textContent = data.clientsCount || 0;
+                    break;
+                    
+                case 'content_update':
+                    // Recibir actualización de contenido (si hubiera múltiples admins)
+                    console.log('Contenido actualizado desde servidor');
+                    break;
+            }
+        }
+
+        function broadcastToServer(content) {
+            if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+                wsConnection.send(JSON.stringify({
+                    type: 'admin_update',
+                    content: content,
+                    timestamp: Date.now()
+                }));
+                return true;
+            }
+            return false;
+        }
+
+        function broadcastUpdate() {
+            const content = {
+                items: carouselItems,
+                logo: logoImage,
+                qr: qrImage,
+                eventTitle: eventTitle,
+                slideDuration: parseInt(document.getElementById('slide-duration').value)
+            };
+            
+            // Enviar al servidor WebSocket
+            if (broadcastToServer(content)) {
+                showNotification('Contenido enviado a todas las pantallas', 'success');
+                
+                // También enviar a la API HTTP como respaldo
+                sendToHttpApi(content);
+            } else {
+                showNotification('Usando conexión HTTP como respaldo', 'info');
+                sendToHttpApi(content);
+            }
+        }
+
+        function sendToHttpApi(content) {
+            fetch('/api/update-content', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(content)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Contenido enviado via HTTP:', data);
+            })
+            .catch(error => {
+                console.error('Error enviando contenido:', error);
+            });
+        }
+
+        function updateServerStatus(connected) {
+            const dot = document.getElementById('server-status-dot');
+            const text = document.getElementById('server-status-text');
+            
+            if (connected) {
+                dot.className = 'status-dot connected';
+                text.textContent = 'Servidor conectado';
+            } else {
+                dot.className = 'status-dot';
+                text.textContent = 'Servidor desconectado';
+            }
+        }
+
+        function detectLocalIP() {
+            // Usar WebRTC para detectar IP local
+            const RTCPeerConnection = window.RTCPeerConnection || 
+                                     window.mozRTCPeerConnection || 
+                                     window.webkitRTCPeerConnection;
+            
+            if (RTCPeerConnection) {
+                const pc = new RTCPeerConnection({iceServers: []});
+                pc.createDataChannel('');
+                pc.createOffer().then(offer => pc.setLocalDescription(offer));
+                
+                pc.onicecandidate = (ice) => {
+                    if (ice && ice.candidate && ice.candidate.candidate) {
+                        const candidate = ice.candidate.candidate;
+                        const regex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
+                        const matches = candidate.match(regex);
+                        
+                        if (matches && matches[1]) {
+                            const localIP = matches[1];
+                            if (localIP !== '0.0.0.0' && !localIP.startsWith('127.')) {
+                                serverIP = localIP;
+                                updateURLs(localIP);
+                            }
+                        }
+                        
+                        pc.onicecandidate = null;
+                        pc.close();
+                    }
+                };
+            }
+        }
+
+        function updateURLs(ip) {
+            document.getElementById('admin-url').textContent = `http://${ip}:3000/admin`;
+            document.getElementById('screen-url').textContent = `http://${ip}:3000/pantalla`;
+        }
+
+        function refreshScreen() {
+            broadcastUpdate();
+            showNotification('Actualizando pantallas...', 'info');
+        }
+
+        // Funciones auxiliares
+        function updateStats() {
+            const photos = carouselItems.filter(item => item.type === 'image').length;
+            const messages = carouselItems.filter(item => item.type === 'message').length;
+            const total = carouselItems.length;
+            
+            photoCount.textContent = photos;
+            messageCount.textContent = messages;
+            totalCount.textContent = total;
+        }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('current-time').textContent = timeString;
+        }
+
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            
+            setTimeout(() => {
+                notification.className = 'notification';
+            }, 3000);
+        }
+
+        function saveAllChanges() {
+            const dataToSave = {
+                carouselItems: carouselItems,
+                logoImage: logoImage,
+                qrImage: qrImage,
+                eventTitle: eventTitle,
+                slideDuration: document.getElementById('slide-duration').value
+            };
+            
+            localStorage.setItem('screenCarouselData', JSON.stringify(dataToSave));
+            showNotification('Todos los cambios han sido guardados', 'success');
+        }
+
+        function loadSavedData() {
+            const savedData = localStorage.getItem('screenCarouselData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    
+                    if (data.carouselItems && data.carouselItems.length > 0) {
+                        // Mantener el mensaje de bienvenida
+                        const welcomeMessage = carouselItems[0];
+                        carouselItems = [welcomeMessage];
+                        
+                        // Agregar los elementos guardados
+                        data.carouselItems.forEach(item => {
+                            if (item.id !== 1) { // No duplicar el mensaje de bienvenida
+                                item.id = itemIdCounter++;
+                                carouselItems.push(item);
+                                
+                                // Agregar a la vista correspondiente
+                                if (item.type === 'image') {
+                                    addUploadedItem(item, photoItemsContainer);
+                                } else if (item.type === 'message' && item.id !== 1) {
+                                    addUploadedItem(item, messageItemsContainer);
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (data.logoImage) {
+                        logoImage = data.logoImage;
+                        previewLogo.src = logoImage;
+                    }
+                    
+                    if (data.qrImage) {
+                        qrImage = data.qrImage;
+                        previewQr.src = qrImage;
+                    }
+                    
+                    if (data.eventTitle) {
+                        eventTitle = data.eventTitle;
+                        document.getElementById('event-title').value = eventTitle;
+                        previewTitle.textContent = eventTitle;
+                        updateCarouselItem(1, `Bienvenidos al evento<br><span id="preview-event-title">${eventTitle}</span>`);
+                    }
+                    
+                    if (data.slideDuration) {
+                        document.getElementById('slide-duration').value = data.slideDuration;
+                    }
+                    
+                    updateStats();
+                    showNotification('Datos cargados desde almacenamiento local', 'success');
+                } catch (e) {
+                    console.error('Error al cargar datos guardados:', e);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
