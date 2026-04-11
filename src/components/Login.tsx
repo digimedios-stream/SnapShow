@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Mail, Lock, Loader2 } from 'lucide-react';
+import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -31,8 +31,13 @@ export const Login = () => {
       
       <div className="glass w-full max-w-md p-8">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-gradient-primary mb-2">Bienvenido</h1>
-          <p className="text-white/40">Ingresa tus credenciales para administrar tus pantallas</p>
+          <div className="flex justify-center mb-4">
+            <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-400">
+              <Sparkles size={32} />
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-gradient-primary mb-2 tracking-tight">SnapShow</h1>
+          <p className="text-white/40">SaaS de Proyección para Eventos</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
