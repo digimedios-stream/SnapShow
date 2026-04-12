@@ -143,43 +143,70 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
 
       {/* Main Content Carousel */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key={`${currentItem.id}-${currentIndex}`}
-          initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
-          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-          exit={{ opacity: 0, scale: 1.1, rotateY: 10 }}
-          transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
-          className="absolute inset-0 flex items-center justify-center p-24 z-10"
-        >
-          {currentItem.type === 'message' && (
-            <div className="text-center max-w-5xl">
-              <h1 className="text-6xl md:text-8xl font-black leading-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] tracking-tight">
-                {currentItem.text_content}
-              </h1>
+        {items.length === 0 ? (
+          <motion.div
+            key="empty-state"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="absolute inset-0 flex flex-col items-center justify-center p-24 z-10 text-center"
+          >
+            <div className="relative mb-12">
+              <div className="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full animate-pulse" />
+              <div className="glass p-8 rounded-[40px] border border-white/20 shadow-2xl relative">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`${window.location.origin}/guest?id=${eventId}`)}`} 
+                  alt="QR" 
+                  className="w-64 h-64 object-contain rounded-2xl bg-white p-2" 
+                />
+              </div>
             </div>
-          )}
+            <h2 className="text-6xl font-black mb-4 tracking-tighter drop-shadow-2xl">
+              ¡TU MOMENTO EN PANTALLA! 📸
+            </h2>
+            <p className="text-3xl font-bold text-white/40 uppercase tracking-[0.3em]">
+              Escanea el código para participar
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key={`${items[currentIndex]?.id}-${currentIndex}`}
+            initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            exit={{ opacity: 0, scale: 1.1, rotateY: 10 }}
+            transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
+            className="absolute inset-0 flex items-center justify-center p-24 z-10"
+          >
+            {items[currentIndex]?.type === 'message' && (
+              <div className="text-center max-w-5xl">
+                <h1 className="text-6xl md:text-8xl font-black leading-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] tracking-tight">
+                  {items[currentIndex].text_content}
+                </h1>
+              </div>
+            )}
 
-          {currentItem.type === 'image' && (
-            <div className="relative group">
-               <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full scale-110 -z-10" />
-               <img 
-                 src={currentItem.content_url} 
-                 className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-4 border-white/10" 
-                 alt="Content" 
-               />
-            </div>
-          )}
+            {items[currentIndex]?.type === 'image' && (
+              <div className="relative group">
+                 <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full scale-110 -z-10" />
+                 <img 
+                   src={items[currentIndex].content_url} 
+                   className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-4 border-white/10" 
+                   alt="Content" 
+                 />
+              </div>
+            )}
 
-          {currentItem.type === 'video' && (
-            <video 
-              src={currentItem.content_url} 
-              autoPlay 
-              muted 
-              onEnded={handleNext}
-              className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-4 border-white/10"
-            />
-          )}
-        </motion.div>
+            {items[currentIndex]?.type === 'video' && (
+              <video 
+                src={items[currentIndex].content_url} 
+                autoPlay 
+                muted 
+                onEnded={handleNext}
+                className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-4 border-white/10"
+              />
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <div className="absolute bottom-10 left-0 w-full text-center z-20 pointer-events-none px-12">
