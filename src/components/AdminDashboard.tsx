@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Copy, Check, Download } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Copy, Check, Download, Loader2 } from 'lucide-react';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 import { SettingsPanel } from './SettingsPanel';
 
 export const AdminDashboard = () => {
@@ -10,6 +10,7 @@ export const AdminDashboard = () => {
   const [copied, setCopied] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<any>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -34,19 +35,29 @@ export const AdminDashboard = () => {
       return;
     }
 
-    if (!confirm(`Se van a descargar ${approvedMedia.length} archivos. ¿Continuar?`)) return;
+    setIsDownloading(true);
+    const zip = new JSZip();
+    const eventName = events.find(e => e.id === selectedEventId)?.name || 'evento';
 
-    approvedMedia.forEach((item, index) => {
-      setTimeout(() => {
-        const link = document.createElement('a');
-        link.href = item.content_url;
-        link.download = `snapshow-${selectedEventId}-${index}`;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, index * 300);
-    });
+    try {
+      // Descargamos cada archivo uno por uno
+      const promises = approvedMedia.map(async (item, index) => {
+        const response = await fetch(item.content_url);
+        const blob = await response.blob();
+        const extension = item.type === 'video' ? 'mp4' : 'jpg';
+        zip.file(`${index + 1}-${item.type}.${extension}`, blob);
+      });
+
+      await Promise.all(promises);
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `SnapShow-${eventName.replace(/\s+/g, '_')}.zip`);
+      
+    } catch (error) {
+      console.error('Error al crear el ZIP:', error);
+      alert('Error al descargar los archivos. Asegúrate de que los archivos sean accesibles.');
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   useEffect(() => {
@@ -356,12 +367,20 @@ export const AdminDashboard = () => {
                   <ExternalLink size={18} /> Proyectar Screen
                 </button>
                 <button 
-                  onClick={handleDownloadAll}
-                  className="flex items-center gap-2 glass px-4 py-2 hover:bg-white/10 transition-colors text-green-400 font-medium"
-                  title="Descargar todos los archivos"
-                >
+                onClick={handleDownloadAll}
+                disabled={isDownloading}
+                className={`flex items-center gap-2 glass px-4 py-2 transition-colors font-medium ${isDownloading ? 'text-white/40 cursor-wait' : 'text-green-400 hover:bg-white/10'}`}
+                title="Descargar todos los archivos en un ZIP"
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span className="text-sm">Empaquetando...</span>
+                  </>
+                ) : (
                   <Download size={18} />
-                </button>
+                )}
+              </button>
                 <button 
                   onClick={() => setIsSettingsOpen(true)}
                   className="flex items-center gap-2 glass px-4 py-2 hover:bg-white/10 transition-colors text-white/60"
