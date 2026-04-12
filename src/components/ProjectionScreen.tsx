@@ -103,6 +103,7 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
 
       <AnimatePresence mode="wait">
         <BackgroundAnimations theme={(settings.background_animation as any) || 'lights'} />
+      </AnimatePresence>
       
       {/* HUD: Logo & QR */}
       <div className="absolute top-8 left-8 z-20">
