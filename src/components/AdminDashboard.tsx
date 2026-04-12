@@ -22,6 +22,29 @@ export const AdminDashboard = () => {
     fetchInitialData();
   }, []);
 
+  useEffect(() => {
+    if (!selectedEventId) return;
+    
+    fetchContent(selectedEventId);
+
+    // Suscribirse a cambios en tiempo real
+    const channel = supabase
+      .channel(`admin_changes_${selectedEventId}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'content_items',
+        filter: `event_id=eq.${selectedEventId}` 
+      }, () => {
+        fetchContent(selectedEventId);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedEventId]);
+
   const fetchInitialData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;

@@ -36,12 +36,25 @@ export const GuestUpload = () => {
         setLoading(false);
         return;
       }
-      const { data } = await supabase.from('events').select('name, type').eq('id', eventId).single();
-      if (data) setEventData(data);
+      
+      // Cargamos el evento Y sus ajustes (Importante para el branding)
+      const { data } = await supabase
+        .from('events')
+        .select('*, settings:event_settings(*)')
+        .eq('id', eventId)
+        .single();
+        
+      if (data) {
+        setEventData(data);
+      }
       setLoading(false);
     }
     fetchEvent();
   }, [eventId]);
+
+  const settings = Array.isArray(eventData?.settings) ? eventData?.settings[0] : eventData?.settings;
+  const themeColor = settings?.theme_id || 'indigo';
+  const bgVariant = settings?.background_variant || 'aurora';
 
   // --- Camera Logic ---
   const startCamera = async () => {
@@ -205,12 +218,11 @@ export const GuestUpload = () => {
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="animate-spin text-indigo-500" /></div>;
 
   return (
-    <div className="min-h-screen bg-aurora text-white flex flex-col font-sans relative overflow-hidden">
+    <div className={`min-h-screen bg-${bgVariant} text-white flex flex-col font-sans relative overflow-hidden transition-colors duration-700`}>
       {/* Background Glow & Orbs */}
       <div className="absolute top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-indigo-500/10 rounded-full blur-[120px] animate-float" />
+        <div className={`absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-${themeColor}-500/10 rounded-full blur-[120px] animate-float`} />
         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-500/10 rounded-full blur-[120px] animate-float-delayed" />
-        <div className="absolute top-[40%] left-[20%] w-[40%] h-[40%] bg-pink-500/5 rounded-full blur-[100px] animate-pulse" />
       </div>
 
       <main className="flex-1 flex flex-col p-6 max-w-md mx-auto w-full">
@@ -232,9 +244,9 @@ export const GuestUpload = () => {
             >
               <button 
                 onClick={() => setCurrentView('camera')}
-                className="w-full glass-card p-8 flex flex-col items-center gap-4 hover:border-indigo-500/40 transition-all active:scale-95"
+                className={`w-full glass-card p-8 flex flex-col items-center gap-4 hover:border-${themeColor}-500/40 transition-all active:scale-95`}
               >
-                <div className="w-20 h-20 bg-indigo-500/20 rounded-3xl flex items-center justify-center text-indigo-400">
+                <div className={`w-20 h-20 bg-${themeColor}-500/20 rounded-3xl flex items-center justify-center text-${themeColor}-400`}>
                   <Camera size={40} />
                 </div>
                 <div className="text-center">
@@ -360,7 +372,7 @@ export const GuestUpload = () => {
                 <button 
                   onClick={handleFinalUpload}
                   disabled={uploading}
-                  className="flex-[2] py-5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-black flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/30 disabled:opacity-50"
+                  className={`flex-[2] py-5 bg-${themeColor}-600 hover:bg-${themeColor}-500 rounded-2xl font-black flex items-center justify-center gap-2 shadow-xl shadow-${themeColor}-600/30 disabled:opacity-50 transition-all`}
                 >
                   {uploading ? <Loader2 className="animate-spin" /> : <><Check size={24} /> ¡ENVIAR!</>}
                 </button>
