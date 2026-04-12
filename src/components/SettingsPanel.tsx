@@ -37,22 +37,26 @@ export const SettingsPanel = ({ eventId, onClose }: SettingsPanelProps) => {
     if (!settings) return;
     setSaving(true);
     
+    // Usamos upsert para asegurar que si no existe la fila, se cree
     const { error } = await supabase
       .from('event_settings')
-      .update({
+      .upsert({
+        event_id: eventId, // Es vital incluir el event_id para el upsert
         slide_duration: settings.slide_duration,
         background_animation: settings.background_animation,
         show_qr: settings.show_qr,
         show_logo: settings.show_logo,
         qr_url: settings.qr_url,
         logo_url: settings.logo_url
-      })
-      .eq('event_id', eventId);
+      }, { onConflict: 'event_id' });
     
     if (error) {
-      alert('Error al guardar: ' + error.message);
+      console.error('Error de Supabase:', error);
+      alert('Error de base de datos: ' + error.message);
     } else {
       setSaving(false);
+      // Forzamos un aviso de éxito
+      alert('✅ ¡Configuración guardada correctamente!');
       onClose();
     }
   };
