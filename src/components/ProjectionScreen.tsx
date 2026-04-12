@@ -72,26 +72,41 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
     };
   }, [eventId]);
 
+  // Asegura que el indice siempre sea valido si la lista de items cambia
   useEffect(() => {
-    if (items.length <= 1 || items[currentIndex]?.type === 'video') return;
+    if (items.length > 0 && currentIndex >= items.length) {
+      setCurrentIndex(0);
+    }
+  }, [items]);
+
+  useEffect(() => {
+    // Si no hay items, no hay nada que temporizar
+    if (items.length === 0 || items[currentIndex]?.type === 'video') return;
     
+    // Temporizador para pasar a la siguiente (o al estado vacio)
+    const duration = (settings?.slide_duration || 5) * 1000;
     const interval = setInterval(() => {
       handleNext();
-    }, (settings?.slide_duration || 5) * 1000);
+    }, duration);
 
     return () => clearInterval(interval);
   }, [items, currentIndex, settings]);
 
   const handleNext = async () => {
-    // Antes de pasar al siguiente, sumar 1 al contador de vistas del actual
     const currentItem = items[currentIndex];
+    
+    // 1. Siempre sumamos la vista al elemento actual antes de intentar pasar al siguiente
     if (currentItem && currentItem.id) {
        await supabase.rpc('increment_display_count', { item_id: currentItem.id });
     }
 
+    // 2. Si hay mas de uno, pasamos al siguiente indice
     if (items.length > 1) {
       setCurrentIndex((prev) => (prev + 1) % items.length);
-    }
+    } 
+    // Si solo hay uno, al haber sumado la vista en el paso 1, 
+    // fetchData (por realtime) pronto lo quitara de la lista 'items' 
+    // y el render mostrara el empty-state.
   };
 
   const currentItem = items[currentIndex] || { type: 'message', text_content: 'SnapShow • Esperando contenido...' };
