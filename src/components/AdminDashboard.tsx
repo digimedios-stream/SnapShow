@@ -55,8 +55,10 @@ export const AdminDashboard = () => {
   };
 
   const fetchSingleEvent = async (id: string) => {
-    const { data } = await supabase.from('events').select('*').eq('id', id);
-    if (data) setEvents(data);
+    const { data } = await supabase.from('events').select('*, event_settings(*)').eq('id', id).single();
+    if (data) {
+      setEvents([data]);
+    }
   };
 
   const handleResetCycle = async () => {
@@ -138,7 +140,7 @@ export const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       {/* Onboarding Assistant */}
-      {currentEvent && !contentItems.some(i => i.onboarding_completed) && (
+      {currentEvent && !currentEvent.event_settings?.[0]?.onboarding_completed && (
         <ThemeOnboarding 
           eventId={currentEvent.id} 
           initialName={currentEvent.name} 

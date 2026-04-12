@@ -78,15 +78,24 @@ export const ThemeOnboarding = ({ eventId, initialName, onComplete }: ThemeOnboa
   const [saving, setSaving] = useState(false);
 
   const handleFinish = async () => {
-    setSaving(true);
-    await supabase.from('events').update({ name }).eq('id', eventId);
-    await supabase.from('event_settings').upsert({
-      event_id: eventId,
-      theme_id: selectedTheme,
-      background_variant: variant,
-      onboarding_completed: true
-    }, { onConflict: 'event_id' });
-    onComplete();
+    try {
+      setSaving(true);
+      await supabase.from('events').update({ name }).eq('id', eventId);
+      
+      const { error } = await supabase.from('event_settings').upsert({
+        event_id: eventId,
+        theme_id: selectedTheme,
+        background_variant: variant,
+        onboarding_completed: true
+      }, { onConflict: 'event_id' });
+
+      if (error) throw error;
+      onComplete();
+    } catch (error: any) {
+      console.error('Error al configurar:', error);
+      alert('Error al guardar la configuración: ' + error.message);
+      setSaving(false);
+    }
   };
 
   return (
