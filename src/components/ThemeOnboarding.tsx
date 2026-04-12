@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Sparkles, Check, PartyPopper, Heart, GraduationCap, Music, Calendar, Moon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ThemeOnboardingProps {
   eventId: string;
@@ -93,7 +94,7 @@ export const ThemeOnboarding = ({ eventId, initialName, onComplete }: ThemeOnboa
                   onClick={() => setVariant(v)}
                   className={`aspect-square rounded-3xl overflow-hidden border-4 transition-all ${variant === v ? 'border-indigo-500 scale-105' : 'border-transparent'}`}
                 >
-                  <div className={`w-full h-full bg-gradient-to-br p-4 flex items-end justify-end`}>
+                  <div className="w-full h-full bg-gradient-to-br p-4 flex items-end justify-end">
                     {variant === v && <div className="bg-indigo-500 rounded-full p-1"><Check size={20}/></div>}
                   </div>
                 </button>
@@ -115,5 +116,3 @@ export const ThemeOnboarding = ({ eventId, initialName, onComplete }: ThemeOnboa
     </div>
   );
 };
-
-import { motion } from 'framer-motion';
