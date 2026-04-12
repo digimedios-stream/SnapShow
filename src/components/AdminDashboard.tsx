@@ -136,11 +136,14 @@ export const AdminDashboard = () => {
   };
 
   const currentEvent = events.find(e => e.id === selectedEventId);
+  const onboardingCompleted = currentEvent?.event_settings 
+    ? (Array.isArray(currentEvent.event_settings) ? currentEvent.event_settings[0]?.onboarding_completed : currentEvent.event_settings.onboarding_completed)
+    : false;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       {/* Onboarding Assistant */}
-      {currentEvent && !currentEvent.event_settings?.onboarding_completed && (
+      {currentEvent && !onboardingCompleted && (
         <ThemeOnboarding 
           eventId={currentEvent.id} 
           initialName={currentEvent.name} 
