@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Copy, Check, Download, Loader2 } from 'lucide-react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
