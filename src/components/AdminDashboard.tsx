@@ -136,20 +136,28 @@ export const AdminDashboard = () => {
   };
 
   const currentEvent = events.find(e => e.id === selectedEventId);
-  const onboardingCompleted = currentEvent?.event_settings 
-    ? (Array.isArray(currentEvent.event_settings) ? currentEvent.event_settings[0]?.onboarding_completed : currentEvent.event_settings.onboarding_completed)
-    : false;
+  
+  // Lógica de detección ultra-robusta
+  const getOnboardingStatus = () => {
+    if (!currentEvent?.event_settings) return false;
+    const settings = currentEvent.event_settings;
+    if (Array.isArray(settings)) {
+      return settings.length > 0 && settings[0].onboarding_completed === true;
+    }
+    return settings.onboarding_completed === true;
+  };
+
+  const onboardingDone = getOnboardingStatus();
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       {/* Onboarding Assistant */}
-      {currentEvent && !onboardingCompleted && (
+      {currentEvent && onboardingDone === false && (
         <ThemeOnboarding 
           eventId={currentEvent.id} 
           initialName={currentEvent.name} 
           onComplete={() => {
             fetchInitialData();
-            // Refresco forzado por seguridad
             window.location.reload();
           }} 
         />
