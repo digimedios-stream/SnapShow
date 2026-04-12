@@ -110,6 +110,29 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleCreateEvent = async (name: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const { data: newEvent, error: eventError } = await supabase.from('events').insert({
+      name,
+      client_id: user.id
+    }).select().single();
+
+    if (eventError) {
+      alert('Error: ' + eventError.message);
+      return;
+    }
+
+    // Auto-create settings
+    await supabase.from('event_settings').insert({
+      event_id: newEvent.id,
+      onboarding_completed: false
+    });
+
+    fetchInitialData();
+  };
+
   const handleUpload = async (file: File, type: 'image' | 'video') => {
     if (!selectedEventId) return;
     const bucket = type === 'image' ? 'images' : 'videos';
@@ -217,12 +240,43 @@ export const AdminDashboard = () => {
                {event.name}
              </button>
           ))}
+          {isAdmin && (
+            <button 
+              onClick={() => {
+                const name = prompt('Nombre del nuevo evento:');
+                if (name) handleCreateEvent(name);
+              }}
+              className="w-full mt-4 border border-dashed border-white/20 p-3 rounded-lg text-white/40 hover:text-indigo-400 hover:border-indigo-400/40 transition-all flex items-center justify-center gap-2"
+            >
+              <Sparkles size={14} />
+              <span className="text-xs font-bold uppercase tracking-widest">Crear Evento</span>
+            </button>
+          )}
         </nav>
-        <button onClick={() => supabase.auth.signOut()} className="mt-auto flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400"><LogOut size={18} /> Salir</button>
+        <button onClick={() => supabase.auth.signOut()} className="mt-6 flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400 border-t border-white/5 pt-6"><LogOut size={18} /> Salir</button>
       </aside>
 
       <main className="flex-1 p-8 overflow-y-auto">
-        {selectedEventId && (
+        {!selectedEventId ? (
+          <div className="h-full flex flex-col items-center justify-center text-center max-w-xl mx-auto">
+            <div className="p-8 bg-indigo-500/5 rounded-full mb-8 animate-pulse">
+              <Sparkles className="text-indigo-500" size={64} />
+            </div>
+            <h2 className="text-4xl font-black mb-4 tracking-tighter">Bienvenido a SnapShow</h2>
+            <p className="text-lg text-white/40 mb-10 leading-relaxed">Te ayudamos a convertir tu evento en una experiencia interactiva única. Selecciona un evento para empezar o crea uno nuevo en el menú lateral.</p>
+            {isAdmin && (
+               <button 
+                onClick={() => {
+                  const name = prompt('Nombre del nuevo evento:');
+                  if (name) handleCreateEvent(name);
+                }}
+                className="bg-indigo-500 text-white px-10 py-4 rounded-2xl font-black shadow-[0_0_30px_rgba(99,102,241,0.2)] hover:bg-indigo-400 transition-all"
+               >
+                 Crear Mi Primer Evento
+               </button>
+            )}
+          </div>
+        ) : (
           <div className="max-w-5xl mx-auto">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
               <div>
