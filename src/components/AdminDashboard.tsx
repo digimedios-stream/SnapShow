@@ -140,11 +140,15 @@ export const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       {/* Onboarding Assistant */}
-      {currentEvent && !currentEvent.event_settings?.[0]?.onboarding_completed && (
+      {currentEvent && !currentEvent.event_settings?.onboarding_completed && (
         <ThemeOnboarding 
           eventId={currentEvent.id} 
           initialName={currentEvent.name} 
-          onComplete={() => fetchInitialData()} 
+          onComplete={() => {
+            fetchInitialData();
+            // Refresco forzado por seguridad
+            window.location.reload();
+          }} 
         />
       )}
 
