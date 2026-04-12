@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { BackgroundAnimations } from './BackgroundAnimations';
+import { BackgroundAnimations, ThemeCategory } from './BackgroundAnimations';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProjectionScreenProps {
@@ -12,9 +12,9 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
   const [settings, setSettings] = useState<any>(null);
   const [eventName, setEventName] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [emojis, setEmojis] = useState<{ id: number; char: string; x: number }[]>([]);
 
   useEffect(() => {
-    // 1. Initial Data Fetch
     const fetchData = async () => {
       const { data: eventData } = await supabase
         .from('events')
@@ -29,98 +29,114 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
       if (eventData) {
         setEventName(eventData.name);
         setSettings(eventData.event_settings);
-        // Only show approved items
-        const approvedItems = (eventData.content_items || [])
-          .filter((item: any) => item.is_approved === true)
+        
+        // SMART CYCLE: Filtrar por aprobación y por límite de visualizaciones
+        const maxDisplays = eventData.event_settings?.max_displays || 999;
+        
+        const validItems = (eventData.content_items || [])
+          .filter((item: any) => 
+            item.is_approved === true && 
+            (item.display_count || 0) < maxDisplays
+          )
           .sort((a: any, b: any) => {
-            // Priority 1: Videos first
-            if (a.type === 'video' && b.type !== 'video') return -1;
-            if (a.type !== 'video' && b.type === 'video') return 1;
-            // Priority 2: Sort order (newest first based on Date.now())
-            return b.sort_order - a.sort_order;
+             // Prioridad a lo menos visto
+             return (a.display_count || 0) - (b.display_count || 0);
           });
-        setItems(approvedItems);
+        
+        setItems(validItems);
       }
     };
 
     fetchData();
 
-    // 2. Realtime Subscriptions
-    const itemsChannel = supabase
-      .channel('content_changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'content_items', 
-        filter: `event_id=eq.${eventId}` 
-      }, () => fetchData())
-      .subscribe();
+    // suscripciones en tiempo real
+    const itemsChannel = supabase.channel('content_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'content_items', filter: `event_id=eq.${eventId}` }, () => fetchData()).subscribe();
+    const settingsChannel = supabase.channel('settings_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings', filter: `event_id=eq.${eventId}` }, () => fetchData()).subscribe();
 
-    const settingsChannel = supabase
-      .channel('settings_changes')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'event_settings', 
-        filter: `event_id=eq.${eventId}` 
-      }, () => fetchData())
+    // LIVE EMOJIS: Escuchar transmisiones de reacciones
+    const emojiChannel = supabase.channel(`reactions_${eventId}`)
+      .on('broadcast', { event: 'emoji' }, (payload) => {
+        const newEmoji = {
+          id: Date.now(),
+          char: payload.payload.char,
+          x: Math.random() * 80 + 10 // Entre 10% y 90% del ancho
+        };
+        setEmojis(prev => [...prev.slice(-20), newEmoji]);
+      })
       .subscribe();
 
     return () => {
       supabase.removeChannel(itemsChannel);
       supabase.removeChannel(settingsChannel);
+      supabase.removeChannel(emojiChannel);
     };
   }, [eventId]);
 
   useEffect(() => {
-    // If it's a video, we don't use the interval timer, we wait for onEnded
     if (items.length <= 1 || items[currentIndex]?.type === 'video') return;
     
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % items.length);
+      handleNext();
     }, (settings?.slide_duration || 5) * 1000);
 
     return () => clearInterval(interval);
   }, [items, currentIndex, settings]);
 
-  const handleVideoEnd = () => {
+  const handleNext = async () => {
+    // Antes de pasar al siguiente, sumar 1 al contador de vistas del actual
+    const currentItem = items[currentIndex];
+    if (currentItem && currentItem.id) {
+       await supabase.rpc('increment_display_count', { item_id: currentItem.id });
+    }
+
     if (items.length > 1) {
       setCurrentIndex((prev) => (prev + 1) % items.length);
     }
   };
 
-  if (!settings) return <div className="h-screen w-screen bg-black flex items-center justify-center text-white">Cargando...</div>;
-
-  const currentItem = items[currentIndex] || { type: 'message', text_content: 'Esperando contenido aprobado...' };
+  const currentItem = items[currentIndex] || { type: 'message', text_content: 'SnapShow • Esperando contenido...' };
 
   return (
-    <div className="h-screen w-screen bg-aurora text-white overflow-hidden relative">
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/20 rounded-full blur-[120px] animate-float-delayed" />
+    <div className="h-screen w-screen text-white overflow-hidden relative">
+      <BackgroundAnimations 
+        category={(settings?.theme_id as ThemeCategory) || 'generic'} 
+        variant={settings?.background_variant || 0} 
+      />
+
+      {/* Floating Emojis Layer */}
+      <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
+        <AnimatePresence>
+          {emojis.map(e => (
+            <motion.span
+              key={e.id}
+              initial={{ y: '110vh', x: `${e.x}vw`, opacity: 0, scale: 0.5 }}
+              animate={{ y: '-10vh', opacity: [0, 1, 1, 0], scale: [0.5, 1.5, 1.5, 1] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 4, ease: "easeOut" }}
+              className="absolute text-6xl drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]"
+            >
+              {e.char}
+            </motion.span>
+          ))}
+        </AnimatePresence>
       </div>
 
-      <AnimatePresence mode="wait">
-        <BackgroundAnimations theme={(settings.background_animation as any) || 'lights'} />
-      </AnimatePresence>
-      
       {/* HUD: Logo & QR */}
       <div className="absolute top-8 left-8 z-20">
-        {settings.show_logo && settings.logo_url && (
-          <img src={settings.logo_url} alt="Logo" className="h-16 w-auto object-contain drop-shadow-lg" />
+        {settings?.show_logo && settings?.logo_url && (
+          <img src={settings.logo_url} alt="Logo" className="h-20 w-auto object-contain drop-shadow-2xl" />
         )}
       </div>
 
       <div className="absolute bottom-12 right-12 z-20">
-        {settings.show_qr && (
-          <div className="glass p-3 rounded-2xl flex flex-col items-center gap-2 border border-white/20">
+        {settings?.show_qr && (
+          <div className="glass p-4 rounded-3xl flex flex-col items-center gap-2 border border-white/20 shadow-2xl backdrop-blur-md">
              <img 
-               src={settings.qr_url || `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${window.location.origin}/guest?id=${eventId}`)}`} 
+               src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${window.location.origin}/guest?id=${eventId}`)}`} 
                alt="QR" 
-               className="w-28 h-28 object-contain rounded-lg bg-white p-1" 
+               className="w-32 h-32 object-contain rounded-xl bg-white p-1" 
              />
-             <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40">¡Sube tus fotos!</p>
+             <p className="text-[12px] uppercase font-bold tracking-[0.3em] text-white/60">¡PARTICIPA!</p>
           </div>
         )}
       </div>
@@ -128,31 +144,30 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
       {/* Main Content Carousel */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentItem.id || 'initial'}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="absolute inset-0 flex items-center justify-center p-20 z-10"
+          key={`${currentItem.id}-${currentIndex}`}
+          initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
+          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+          exit={{ opacity: 0, scale: 1.1, rotateY: 10 }}
+          transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
+          className="absolute inset-0 flex items-center justify-center p-24 z-10"
         >
           {currentItem.type === 'message' && (
-            <div className="text-center max-w-4xl">
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-5xl md:text-7xl font-bold leading-tight drop-shadow-2xl"
-              >
+            <div className="text-center max-w-5xl">
+              <h1 className="text-6xl md:text-8xl font-black leading-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] tracking-tight">
                 {currentItem.text_content}
-              </motion.h1>
+              </h1>
             </div>
           )}
 
           {currentItem.type === 'image' && (
-            <img 
-              src={currentItem.content_url} 
-              className="max-h-full max-w-full object-contain rounded-2xl shadow-2xl" 
-              alt="Evento" 
-            />
+            <div className="relative group">
+               <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full scale-110 -z-10" />
+               <img 
+                 src={currentItem.content_url} 
+                 className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-4 border-white/10" 
+                 alt="Content" 
+               />
+            </div>
           )}
 
           {currentItem.type === 'video' && (
@@ -160,16 +175,15 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
               src={currentItem.content_url} 
               autoPlay 
               muted 
-              onEnded={handleVideoEnd}
-              className="max-h-full max-w-full object-contain rounded-2xl shadow-2xl"
+              onEnded={handleNext}
+              className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-4 border-white/10"
             />
           )}
         </motion.div>
       </AnimatePresence>
 
-      {/* Event Title Footer */}
-      <div className="absolute bottom-8 left-0 w-full text-center z-20 pointer-events-none">
-        <p className="text-xl font-medium opacity-60 uppercase tracking-widest drop-shadow-md">
+      <div className="absolute bottom-10 left-0 w-full text-center z-20 pointer-events-none px-12">
+        <p className="text-2xl font-bold uppercase tracking-[0.4em] text-white/40 drop-shadow-lg">
           {eventName}
         </p>
       </div>
