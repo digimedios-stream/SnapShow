@@ -227,9 +227,11 @@ export const GuestUpload = () => {
 
       <main className="flex-1 flex flex-col p-6 max-w-md mx-auto w-full">
         {/* Header */}
-        <header className="text-center mb-8 pt-4">
-          <h1 className="text-3xl font-black text-gradient tracking-tight">{eventData?.name || 'SnapShow'}</h1>
-          <p className="text-white/40 text-sm mt-1 uppercase tracking-widest font-bold">Invitado de Honor</p>
+        <header className="text-center mb-10 pt-4">
+          <h1 className="text-4xl font-black mb-2 tracking-tight drop-shadow-lg text-white">
+            {eventData?.name || 'SnapShow'}
+          </h1>
+          <p className="text-white/40 text-[10px] mt-1 uppercase tracking-[0.2em] font-black">🌟 Invitado Especial 🌟</p>
         </header>
 
         <AnimatePresence mode="wait">
@@ -244,24 +246,24 @@ export const GuestUpload = () => {
             >
               <button 
                 onClick={() => setCurrentView('camera')}
-                className={`w-full glass-card p-8 flex flex-col items-center gap-4 hover:border-${themeColor}-500/40 transition-all active:scale-95`}
+                className={`w-full glass-card p-8 flex flex-col items-center gap-4 hover:border-${themeColor}-500/40 transition-all active:scale-95 shadow-2xl`}
               >
-                <div className={`w-20 h-20 bg-${themeColor}-500/20 rounded-3xl flex items-center justify-center text-${themeColor}-400`}>
+                <div className={`w-20 h-20 bg-${themeColor}-500/20 rounded-3xl flex items-center justify-center text-${themeColor}-400 shadow-xl`}>
                   <Camera size={40} />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-2xl font-black">Hacer Selfie</h3>
-                  <p className="text-white/40 text-sm">Foto o Video en vivo</p>
+                  <h3 className="text-2xl font-black italic">Hacer Selfie 🤳</h3>
+                  <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-1">📸 FOTO O 🎥 VIDEO</p>
                 </div>
               </button>
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="glass-card p-6 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/5 active:scale-95 transition-all text-center">
                   <input type="file" className="hidden" accept="image/*,video/*" onChange={handleGalleryUpload} />
-                  <div className="p-4 bg-purple-500/10 rounded-2xl text-purple-400 uppercase">
+                  <div className="p-4 bg-purple-500/10 rounded-2xl text-purple-400">
                     <ImageIcon size={28} />
                   </div>
-                  <span className="font-bold text-sm">Galería</span>
+                  <span className="font-bold text-xs uppercase tracking-tighter">Galería 🖼️</span>
                 </label>
 
                 <button 
@@ -271,7 +273,7 @@ export const GuestUpload = () => {
                   <div className="p-4 bg-green-500/10 rounded-2xl text-green-400">
                     <MessageSquare size={28} />
                   </div>
-                  <span className="font-bold text-sm">Mensaje</span>
+                  <span className="font-bold text-xs uppercase tracking-tighter">Mensaje ✍️</span>
                 </button>
               </div>
             </motion.div>

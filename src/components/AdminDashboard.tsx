@@ -339,20 +339,43 @@ export const AdminDashboard = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-bold mb-6">Contenido en vivo ({contentItems.length})</h3>
               {contentItems.map((item) => (
-                <div key={item.id} className="glass-card p-4 flex items-center gap-4">
-                  <div className="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
+                <div key={item.id} className="glass-card p-4 flex items-center gap-4 hover:border-white/10 transition-all">
+                  <div className="w-20 h-20 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/5">
                     {item.type === 'image' && <img src={item.content_url} className="w-full h-full object-cover" />}
                     {item.type === 'video' && <video src={item.content_url} className="w-full h-full object-cover" />}
-                    {item.type === 'message' && <MessageSquare className="text-white/20" />}
+                    {item.type === 'message' && <div className="p-3 text-2xl">💬</div>}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-bold">{item.type === 'message' ? item.text_content : 'Multimeadia'}</p>
-                    <div className="flex gap-4 text-xs font-bold uppercase tracking-widest text-white/30 mt-1">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold truncate text-lg">
+                      {item.type === 'message' ? item.text_content : 'Multimeadia'}
+                    </p>
+                    <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">
                       <span>Vistas: <span className={item.display_count >= 3 ? 'text-amber-500' : 'text-green-500'}>{item.display_count || 0}</span></span>
-                      <span>Estado: {item.is_approved ? '✔️ Aire' : '⏳ Pendiente'}</span>
+                      <span className={item.is_approved ? 'text-green-500' : 'text-amber-500 italic'}>
+                        {item.is_approved ? '● En Pantalla' : '● Pendiente'}
+                      </span>
                     </div>
                   </div>
-                  <button onClick={() => supabase.from('content_items').delete().eq('id', item.id)} className="p-2 text-white/10 hover:text-red-500"><Trash2 size={18} /></button>
+                  <div className="flex gap-2">
+                    {!item.is_approved && (
+                      <button 
+                        onClick={() => handleApprove(item.id)}
+                        className="px-6 py-3 bg-green-500 text-black rounded-xl font-black text-xs hover:bg-green-400 transition-all flex items-center gap-2"
+                      >
+                        <Check size={16} /> APROBAR
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => {
+                        if(confirm('¿Seguro que quieres borrarlo?')) {
+                          supabase.from('content_items').delete().eq('id', item.id).then(() => fetchContent(selectedEventId!));
+                        }
+                      }}
+                      className="p-3 bg-white/5 text-white/20 rounded-xl hover:bg-red-500/20 hover:text-red-500 transition-all"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
