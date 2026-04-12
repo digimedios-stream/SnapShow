@@ -11,6 +11,7 @@ export const AdminDashboard = () => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [contentItems, setContentItems] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
+  const [onboardingFinished, setOnboardingFinished] = useState<boolean | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<any>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -32,17 +33,26 @@ export const AdminDashboard = () => {
       .eq('id', user.id)
       .single();
 
-    if (profile?.is_superadmin) {
+    if (profile?.is_superadmin || !profile) {
       setIsAdmin(true);
-      fetchEventsForAdmin();
+      const { data } = await supabase.from('events').select('*');
+      if (data) {
+        setEvents(data);
+        const targetId = selectedEventId || data[0]?.id;
+        if (targetId) {
+          const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', targetId).maybeSingle();
+          setOnboardingFinished(settings?.onboarding_completed === true);
+        }
+      }
     } else if (profile?.managed_event_id) {
       setIsAdmin(false);
       setSelectedEventId(profile.managed_event_id);
-      fetchSingleEvent(profile.managed_event_id);
-    } else {
-      // Fallback for current setup: show all if no profile exists yet
-      setIsAdmin(true);
-      fetchEventsForAdmin();
+      const { data } = await supabase.from('events').select('*').eq('id', profile.managed_event_id).single();
+      if (data) {
+        setEvents([data]);
+        const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', profile.managed_event_id).maybeSingle();
+        setOnboardingFinished(settings?.onboarding_completed === true);
+      }
     }
   };
 
@@ -152,12 +162,12 @@ export const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex">
       {/* Onboarding Assistant */}
-      {currentEvent && onboardingDone === false && (
+      {currentEvent && onboardingFinished === false && (
         <ThemeOnboarding 
           eventId={currentEvent.id} 
           initialName={currentEvent.name} 
           onComplete={() => {
-            fetchInitialData();
+            setOnboardingFinished(true);
             window.location.reload();
           }} 
         />
