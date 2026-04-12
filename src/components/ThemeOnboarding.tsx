@@ -80,17 +80,39 @@ export const ThemeOnboarding = ({ eventId, initialName, onComplete }: ThemeOnboa
   const handleFinish = async () => {
     try {
       setSaving(true);
+      
+      // 1. Actualizar el nombre del evento
       await supabase.from('events').update({ name }).eq('id', eventId);
       
-      const { error } = await supabase.from('event_settings').upsert({
-        event_id: eventId,
-        theme_id: selectedTheme,
-        background_variant: variant,
-        onboarding_completed: true
-      }, { onConflict: 'event_id' });
+      // 2. Intentar actualizar los ajustes (UPDATE)
+      const { data: updateData, error: updateError } = await supabase
+        .from('event_settings')
+        .update({
+          theme_id: selectedTheme,
+          background_variant: variant,
+          onboarding_completed: true
+        })
+        .eq('event_id', eventId)
+        .select();
 
-      if (error) throw error;
-      onComplete();
+      // 3. Si no existe la fila (updateData vacío), la insertamos (INSERT)
+      if (!updateData || updateData.length === 0) {
+        const { error: insertError } = await supabase
+          .from('event_settings')
+          .insert({
+            event_id: eventId,
+            theme_id: selectedTheme,
+            background_variant: variant,
+            onboarding_completed: true
+          });
+        if (insertError) throw insertError;
+      } else if (updateError) {
+        throw updateError;
+      }
+
+      alert('✨ ¡Configuración guardada con éxito! Redirigiendo...');
+      window.location.reload();
+      
     } catch (error: any) {
       console.error('Error al configurar:', error);
       alert('Error al guardar la configuración: ' + error.message);
