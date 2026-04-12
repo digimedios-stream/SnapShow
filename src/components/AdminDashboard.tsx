@@ -365,10 +365,25 @@ export const AdminDashboard = () => {
                     <p className="font-bold truncate text-lg">
                       {item.type === 'message' ? item.text_content : 'Multimeadia'}
                     </p>
-                    <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">
-                      <span>Vistas: <span className={item.display_count >= 3 ? 'text-amber-500' : 'text-green-500'}>{item.display_count || 0}</span></span>
-                      <span className={item.is_approved ? 'text-green-500' : 'text-amber-500 italic'}>
-                        {item.is_approved ? '● En Pantalla' : '● Pendiente'}
+                    <div className="flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest mt-1">
+                      <div className="flex items-center gap-2">
+                        <span>Vistas: <span className={item.display_count >= 3 ? 'text-blue-400' : 'text-green-500'}>{item.display_count || 0}</span></span>
+                        {item.display_count > 0 && (
+                          <button 
+                            onClick={() => supabase.from('content_items').update({ display_count: 0 }).eq('id', item.id).then(() => fetchContent(selectedEventId!))}
+                            title="Reiniciar vistas"
+                            className="p-1 bg-white/5 rounded hover:bg-white/20 text-white/40"
+                          >
+                            <RefreshCw size={10} />
+                          </button>
+                        )}
+                      </div>
+                      <span className={
+                        !item.is_approved ? 'text-amber-500 italic' :
+                        item.display_count >= 3 ? 'text-white/40' : 'text-green-500'
+                      }>
+                        {!item.is_approved ? '● Pendiente' : 
+                         item.display_count >= 3 ? '● Ciclo Completo (Pausado)' : '● En Pantalla'}
                       </span>
                     </div>
                   </div>
