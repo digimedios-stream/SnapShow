@@ -157,17 +157,40 @@ export const AdminDashboard = () => {
     fetchInitialData();
   };
 
-  const handleUpload = async (file: File, type: 'image' | 'video') => {
+  const handleUpload = async (file: File) => {
     if (!selectedEventId) return;
-    const bucket = type === 'image' ? 'images' : 'videos';
-    const filePath = `${selectedEventId}/${Math.random()}-${file.name}`;
-    await supabase.storage.from(bucket).upload(filePath, file);
-    const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    setUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${selectedEventId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('event-content')
+      .upload(filePath, file);
+
+    if (!uploadError) {
+      const { data: { publicUrl } } = supabase.storage
+        .from('event-content')
+        .getPublicUrl(filePath);
+
+      await supabase.from('content_items').insert({
+        event_id: selectedEventId,
+        type: file.type.startsWith('video') ? 'video' : 'image',
+        content_url: publicUrl,
+        is_approved: false // IMPORTANTE: El administrador también debe aprobarlo después
+      });
+      fetchContent(selectedEventId);
+    }
+    setUploading(false);
+  };
+
+  const handleAddMessage = async (text: string) => {
+    if (!selectedEventId) return;
     await supabase.from('content_items').insert({
       event_id: selectedEventId,
-      type: type,
-      content_url: publicUrl,
-      is_approved: true
+      type: 'message',
+      text_content: text,
+      is_approved: false // IMPORTANTE: El administrador también debe aprobarlo después
     });
     fetchContent(selectedEventId);
   };
@@ -329,13 +352,45 @@ export const AdminDashboard = () => {
             </header>
 
             {/* Acciones Rápidas */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-               <label className="glass-card p-6 flex flex-col items-center gap-3 cursor-pointer hover:border-indigo-500/40">
-                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleUpload(e.target.files![0], 'image')} />
-                  <ImageIcon className="text-indigo-400" /> <span>Sube Foto</span>
-               </label>
-               {/* Video and Message buttons... */}
-            </div>
+            <div className="flex flex-wrap gap-4 mb-12">
+                <button 
+                  onClick={() => openPopOut()}
+                  className="px-6 py-3 bg-white/10 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-white/20 transition-all text-sm"
+                >
+                  <Monitor size={18} /> PROYECTAR
+                </button>
+                
+                {/* BOTONES DE CARGA ADMINISTRADOR */}
+                <label className="px-6 py-3 bg-indigo-500 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-400 transition-all text-sm cursor-pointer">
+                  <Video size={18} /> SUBIR VÍDEO
+                  <input 
+                    type="file" 
+                    accept="video/*" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleUpload(file);
+                    }}
+                  />
+                </label>
+
+                <button 
+                  onClick={() => {
+                    const msg = prompt('Escribe el mensaje para la pantalla:');
+                    if (msg) handleAddMessage(msg);
+                  }}
+                  className="px-6 py-3 bg-green-500 text-black rounded-2xl font-bold flex items-center gap-2 hover:bg-green-400 transition-all text-sm"
+                >
+                  <MessageSquare size={18} /> NUEVO MENSAJE
+                </button>
+
+                <button 
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-3 bg-white/5 text-white rounded-2xl hover:bg-white/10 transition-all"
+                >
+                  <Settings />
+                </button>
+              </div>
 
             <div className="space-y-4">
               <h3 className="text-lg font-bold mb-6">Contenido en vivo ({contentItems.length})</h3>
