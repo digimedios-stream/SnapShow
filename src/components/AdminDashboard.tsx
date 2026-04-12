@@ -353,14 +353,20 @@ export const AdminDashboard = () => {
 
             {/* Acciones Rápidas */}
             <div className="flex flex-wrap gap-4 mb-12">
-                <button 
-                  onClick={() => openPopOut()}
-                  className="px-6 py-3 bg-white/10 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-white/20 transition-all text-sm"
-                >
-                  <Monitor size={18} /> PROYECTAR
-                </button>
-                
                 {/* BOTONES DE CARGA ADMINISTRADOR */}
+                <label className="px-6 py-3 bg-amber-500 text-black rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-400 transition-all text-sm cursor-pointer">
+                  <ImageIcon size={18} /> SUBIR FOTO
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleUpload(file);
+                    }}
+                  />
+                </label>
+
                 <label className="px-6 py-3 bg-indigo-500 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-400 transition-all text-sm cursor-pointer">
                   <Video size={18} /> SUBIR VÍDEO
                   <input 
@@ -382,13 +388,6 @@ export const AdminDashboard = () => {
                   className="px-6 py-3 bg-green-500 text-black rounded-2xl font-bold flex items-center gap-2 hover:bg-green-400 transition-all text-sm"
                 >
                   <MessageSquare size={18} /> NUEVO MENSAJE
-                </button>
-
-                <button 
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="p-3 bg-white/5 text-white rounded-2xl hover:bg-white/10 transition-all"
-                >
-                  <Settings />
                 </button>
               </div>
 
