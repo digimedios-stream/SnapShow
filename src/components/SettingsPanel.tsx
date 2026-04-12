@@ -77,10 +77,11 @@ export const SettingsPanel = ({ eventId, onClose }: SettingsPanelProps) => {
             onChange={(e) => setSettings({ ...settings, background_animation: e.target.value })}
             className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:border-indigo-500/50 focus:outline-none appearance-none"
           >
+            <option value="aurora">Aurora Galáctica</option>
             <option value="lights">Luces Neón</option>
             <option value="bokeh">Burbujas (Bokeh)</option>
-            <option value="particles" disabled>Partículas (Próximamente)</option>
-            <option value="none">Sin fondo</option>
+            <option value="particles">Magia Estelar (Partículas)</option>
+            <option value="none">Sin fondo (Solo color)</option>
           </select>
         </div>
 
