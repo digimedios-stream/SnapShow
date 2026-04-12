@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
 import JSZip from 'jszip';
@@ -340,10 +341,25 @@ export const AdminDashboard = () => {
               <h3 className="text-lg font-bold mb-6">Contenido en vivo ({contentItems.length})</h3>
               {contentItems.map((item) => (
                 <div key={item.id} className="glass-card p-4 flex items-center gap-4 hover:border-white/10 transition-all">
-                  <div className="w-20 h-20 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/5">
+                  <div 
+                    onClick={() => setPreviewItem(item)}
+                    className="w-20 h-20 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/5 cursor-zoom-in hover:scale-105 transition-all group"
+                  >
                     {item.type === 'image' && <img src={item.content_url} className="w-full h-full object-cover" />}
-                    {item.type === 'video' && <video src={item.content_url} className="w-full h-full object-cover" />}
+                    {item.type === 'video' && (
+                      <video 
+                        src={item.content_url} 
+                        className="w-full h-full object-cover" 
+                        muted 
+                        loop 
+                        autoPlay 
+                        playsInline
+                      />
+                    )}
                     {item.type === 'message' && <div className="p-3 text-2xl">💬</div>}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                       <Play size={20} className="text-white fill-white" />
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold truncate text-lg">
@@ -383,6 +399,76 @@ export const AdminDashboard = () => {
         )}
       </main>
       {isSettingsOpen && selectedEventId && <SettingsPanel eventId={selectedEventId} onClose={() => setIsSettingsOpen(false)} />}
+
+      {/* MODAL DE VISTA PREVIA GIGANTE */}
+      <AnimatePresence>
+        {previewItem && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-12">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPreviewItem(null)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-4xl max-h-full bg-white/5 rounded-[40px] overflow-hidden border border-white/10 shadow-2xl flex flex-col"
+            >
+               <button 
+                 onClick={() => setPreviewItem(null)}
+                 className="absolute top-6 right-6 z-10 p-3 bg-black/50 text-white rounded-full hover:bg-red-500 transition-all"
+               >
+                 <X size={24} />
+               </button>
+
+               <div className="flex-1 flex items-center justify-center bg-black/20 p-4">
+                  {previewItem.type === 'image' && (
+                    <img src={previewItem.content_url} className="max-w-full max-h-[70vh] object-contain rounded-2xl" />
+                  )}
+                  {previewItem.type === 'video' && (
+                    <video 
+                      src={previewItem.content_url} 
+                      className="max-w-full max-h-[70vh] object-contain rounded-2xl" 
+                      controls 
+                      autoPlay 
+                    />
+                  )}
+                  {previewItem.type === 'message' && (
+                    <div className="p-12 text-center">
+                       <h2 className="text-4xl font-black">{previewItem.text_content}</h2>
+                    </div>
+                  )}
+               </div>
+
+               <div className="p-8 border-t border-white/10 bg-white/5 flex items-center justify-between">
+                  <div>
+                    <p className="text-white/40 uppercase text-xs font-black tracking-widest mb-1">Estado del contenido</p>
+                    <p className="font-bold text-xl">{previewItem.is_approved ? '✅ En Pantalla' : '⏳ Esperando aprobación'}</p>
+                  </div>
+                  <div className="flex gap-4">
+                    {!previewItem.is_approved && (
+                      <button 
+                        onClick={() => { handleApprove(previewItem.id); setPreviewItem(null); }}
+                        className="px-8 py-4 bg-green-500 text-black rounded-2xl font-black hover:bg-green-400 transition-all flex items-center gap-2"
+                      >
+                        <Check /> APROBAR AHORA
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => { if(confirm('¿Borrar este contenido?')) { supabase.from('content_items').delete().eq('id', previewItem.id).then(() => { fetchContent(selectedEventId!); setPreviewItem(null); }); } }}
+                      className="px-8 py-4 bg-white/10 text-red-400 rounded-2xl font-black hover:bg-red-500/20 transition-all flex items-center gap-2"
+                    >
+                      <Trash2 /> BORRAR
+                    </button>
+                  </div>
+               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
