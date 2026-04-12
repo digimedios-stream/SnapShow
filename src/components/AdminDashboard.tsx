@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Copy, Check } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Copy, Check, Download } from 'lucide-react';
 import { SettingsPanel } from './SettingsPanel';
 
 export const AdminDashboard = () => {
@@ -14,6 +14,40 @@ export const AdminDashboard = () => {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  const handleDeleteEvent = async (id: string, name: string) => {
+    if (!confirm(`¿ESTÁS SEGURO? Se eliminará el evento "${name}" con TODAS sus fotos y videos. Esta acción no se puede deshacer.`)) return;
+    
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (error) {
+      alert('Error al eliminar: ' + error.message);
+    } else {
+      setSelectedEventId(null);
+      fetchEvents();
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    const approvedMedia = contentItems.filter(item => item.is_approved && item.type !== 'message');
+    if (approvedMedia.length === 0) {
+      alert('No hay fotos o videos aprobados para descargar.');
+      return;
+    }
+
+    if (!confirm(`Se van a descargar ${approvedMedia.length} archivos. ¿Continuar?`)) return;
+
+    approvedMedia.forEach((item, index) => {
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = item.content_url;
+        link.download = `snapshow-${selectedEventId}-${index}`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, index * 300);
+    });
+  };
 
   useEffect(() => {
     if (selectedEventId) {
@@ -252,15 +286,22 @@ export const AdminDashboard = () => {
         
         <nav className="flex-1 space-y-2">
           {events.map((event) => (
-            <button
-              key={event.id}
-              onClick={() => setSelectedEventId(event.id)}
-              className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                selectedEventId === event.id ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'hover:bg-white/5'
-              }`}
-            >
-              {event.name}
-            </button>
+            <div key={event.id} className="group relative">
+              <button
+                onClick={() => setSelectedEventId(event.id)}
+                className={`w-full text-left px-4 py-2 rounded-lg transition-colors pr-10 ${
+                  selectedEventId === event.id ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' : 'hover:bg-white/5'
+                }`}
+              >
+                {event.name}
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id, event.name); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/0 group-hover:text-red-400 hover:bg-red-500/10 rounded-md transition-all"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           ))}
           <button 
             onClick={handleCreateEvent}
@@ -313,6 +354,13 @@ export const AdminDashboard = () => {
                   className="flex items-center gap-2 glass px-6 py-2 hover:bg-white/10 transition-colors text-purple-400 font-medium"
                 >
                   <ExternalLink size={18} /> Proyectar Screen
+                </button>
+                <button 
+                  onClick={handleDownloadAll}
+                  className="flex items-center gap-2 glass px-4 py-2 hover:bg-white/10 transition-colors text-green-400 font-medium"
+                  title="Descargar todos los archivos"
+                >
+                  <Download size={18} />
                 </button>
                 <button 
                   onClick={() => setIsSettingsOpen(true)}
