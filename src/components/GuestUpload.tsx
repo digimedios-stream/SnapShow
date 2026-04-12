@@ -29,6 +29,18 @@ export const GuestUpload = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const timerRef = useRef<any>(null);
+  const [emojiChannel, setEmojiChannel] = useState<any>(null);
+
+  useEffect(() => {
+    if (eventId) {
+      const channel = supabase.channel(`reactions_${eventId}`);
+      channel.subscribe();
+      setEmojiChannel(channel);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [eventId]);
 
   useEffect(() => {
     async function fetchEvent() {
@@ -275,6 +287,35 @@ export const GuestUpload = () => {
                   </div>
                   <span className="font-bold text-xs uppercase tracking-tighter">Mensaje ✍️</span>
                 </button>
+              </div>
+
+              {/* REACCIONES RÁPIDAS (ZONA AMARILLA) */}
+              <div className="glass-card p-6">
+                <p className="text-[10px] text-center uppercase font-black tracking-[0.2em] text-white/30 mb-4">Reacción Rápida en Pantalla ✨</p>
+                <div className="flex justify-between items-center gap-2">
+                  {['❤️', '🔥', '😂', '🙌', '👏'].map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={(e) => {
+                        if (emojiChannel) {
+                          emojiChannel.send({
+                            type: 'broadcast',
+                            event: 'emoji',
+                            payload: { char: emoji }
+                          });
+                        }
+                        
+                        // Feedback visual simple
+                        const btn = e.currentTarget as HTMLElement;
+                        btn.style.transform = 'scale(1.4)';
+                        setTimeout(() => btn.style.transform = 'scale(1)', 100);
+                      }}
+                      className="text-3xl w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl hover:bg-white/10 active:scale-125 transition-all"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
