@@ -195,6 +195,7 @@ export const ThemeOnboarding = ({ eventId, initialName, onComplete }: ThemeOnboa
                  {saving ? 'Configurando...' : '¡Listo, Empezar!'}
                </button>
             </div>
+            <p className="mt-8 text-[10px] text-white/10 uppercase tracking-[0.2em]">SnapShow Engine v3.0.5</p>
           </motion.div>
         )}
       </div>
