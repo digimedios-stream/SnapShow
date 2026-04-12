@@ -205,11 +205,12 @@ export const GuestUpload = () => {
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="animate-spin text-indigo-500" /></div>;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-0 w-full h-full -z-10">
-        <div className="absolute top-[-20%] left-[-20%] w-[100%] h-[100%] bg-indigo-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-20%] w-[100%] h-[100%] bg-purple-500/10 rounded-full blur-[120px]" />
+    <div className="min-h-screen bg-aurora text-white flex flex-col font-sans relative overflow-hidden">
+      {/* Background Glow & Orbs */}
+      <div className="absolute top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-indigo-500/10 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-500/10 rounded-full blur-[120px] animate-float-delayed" />
+        <div className="absolute top-[40%] left-[20%] w-[40%] h-[40%] bg-pink-500/5 rounded-full blur-[100px] animate-pulse" />
       </div>
 
       <main className="flex-1 flex flex-col p-6 max-w-md mx-auto w-full">

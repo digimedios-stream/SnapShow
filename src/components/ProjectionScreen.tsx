@@ -94,7 +94,15 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
   const currentItem = items[currentIndex] || { type: 'message', text_content: 'Esperando contenido aprobado...' };
 
   return (
-    <div className="h-screen w-screen bg-black text-white overflow-hidden relative font-sans">
+    <div className="h-screen w-screen bg-aurora text-white overflow-hidden relative">
+      {/* Dynamic Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/20 rounded-full blur-[120px] animate-float-delayed" />
+        <div className="absolute top-[30%] right-[10%] w-[30%] h-[30%] bg-pink-600/10 rounded-full blur-[100px] animate-pulse" />
+      </div>
+
+      <AnimatePresence mode="wait">
       <BackgroundAnimations theme={settings.background_animation || 'lights'} />
       
       {/* HUD: Logo & QR */}
