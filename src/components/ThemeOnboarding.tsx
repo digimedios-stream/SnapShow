@@ -3,6 +3,57 @@ import { supabase } from '../lib/supabaseClient';
 import { Sparkles, Check, PartyPopper, Heart, GraduationCap, Music, Calendar, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const THEME_CONFIG: Record<string, string[]> = {
+  quince: [
+    'linear-gradient(135deg, #2d1b4e 0%, #1a1a1a 100%)',
+    'radial-gradient(circle at center, #4c1d95 0%, #000000 100%)',
+    'linear-gradient(45deg, #1e1b4b 0%, #312e81 100%)',
+    'conic-gradient(from 180deg at 50% 50%, #1a1033 0%, #3b0764 100%)'
+  ],
+  wedding: [
+    'linear-gradient(135deg, #1a1a1a 0%, #262626 100%)',
+    'radial-gradient(circle at 50% 50%, #1c1917 0%, #0c0a09 100%)',
+    'linear-gradient(to right, #0f172a, #1e293b)',
+    'radial-gradient(ellipse at bottom, #1e1b4b 0%, #020617 100%)'
+  ],
+  anniversary: [
+    'linear-gradient(135deg, #451a03 0%, #000000 100%)',
+    'radial-gradient(circle at center, #422006 0%, #000000 100%)',
+    'linear-gradient(45deg, #1a1a1a 0%, #2d2d2d 100%)',
+    'conic-gradient(from 0deg, #1a1a1a, #261a0d, #1a1a1a)'
+  ],
+  graduation: [
+    'linear-gradient(135deg, #064e3b 0%, #020617 100%)',
+    'radial-gradient(circle at 10% 10%, #0f172a 0%, #000000 100%)',
+    'linear-gradient(45deg, #0c4a6e 0%, #082f49 100%)',
+    'linear-gradient(to bottom, #1e293b, #0f172a)'
+  ],
+  carnaval: [
+    'linear-gradient(135deg, #701a75 0%, #4a044e 100%)',
+    'radial-gradient(circle at bottom left, #1e1b4b 0%, #701a75 100%)',
+    'linear-gradient(45deg, #4c1d95 0%, #be185d 100%)',
+    'radial-gradient(circle at center, #831843 0%, #000000 100%)'
+  ],
+  festival: [
+    'linear-gradient(135deg, #020617 0%, #1e1b4b 100%)',
+    'radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000000 100%)',
+    'linear-gradient(45deg, #1e1b4b 0%, #312e81 100%)',
+    'linear-gradient(to right, #020617, #1e293b)'
+  ],
+  newyear: [
+    'linear-gradient(135deg, #1a1a1a 0%, #422006 100%)',
+    'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)',
+    'linear-gradient(45deg, #000000 0%, #1e1b4b 100%)',
+    'radial-gradient(ellipse at top, #262626 0%, #000000 100%)'
+  ],
+  generic: [
+    'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
+    'radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)',
+    'linear-gradient(45deg, #000000 0%, #1a1a1a 100%)',
+    'linear-gradient(to bottom, #111111, #000000)'
+  ]
+};
+
 interface ThemeOnboardingProps {
   eventId: string;
   initialName: string;
@@ -94,7 +145,10 @@ export const ThemeOnboarding = ({ eventId, initialName, onComplete }: ThemeOnboa
                   onClick={() => setVariant(v)}
                   className={`aspect-square rounded-3xl overflow-hidden border-4 transition-all ${variant === v ? 'border-indigo-500 scale-105' : 'border-transparent'}`}
                 >
-                  <div className="w-full h-full bg-gradient-to-br p-4 flex items-end justify-end">
+                  <div 
+                    style={{ background: THEME_CONFIG[selectedTheme]?.[v] || THEME_CONFIG.generic[v] }}
+                    className="w-full h-full p-4 flex items-end justify-end"
+                  >
                     {variant === v && <div className="bg-indigo-500 rounded-full p-1"><Check size={20}/></div>}
                   </div>
                 </button>
