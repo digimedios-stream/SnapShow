@@ -31,4 +31,3 @@ dist-ssr
 .env.production.local
 
 # Vite
-src/vite-env.d.ts
