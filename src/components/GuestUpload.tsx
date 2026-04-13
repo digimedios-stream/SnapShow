@@ -274,7 +274,7 @@ export const GuestUpload = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <label className="glass-card p-6 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/5 active:scale-95 transition-all text-center">
-                  <input type="file" className="hidden" accept="image/*,video/*" onChange={handleGalleryUpload} />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleGalleryUpload} />
                   <div className="p-4 bg-purple-500/10 rounded-2xl text-purple-400">
                     <ImageIcon size={28} />
                   </div>

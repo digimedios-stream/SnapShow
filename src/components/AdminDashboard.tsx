@@ -424,7 +424,8 @@ export const AdminDashboard = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold truncate text-lg">
-                      {item.type === 'message' ? item.text_content : 'Archivo Multimedia'}
+                      {item.type === 'message' ? item.text_content : 
+                       item.type === 'image' ? '📸 FOTO DE INVITADO' : '🎥 VÍDEO DE INVITADO'}
                     </p>
                     <div className="flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest mt-1">
                       <div className="flex items-center gap-2">
