@@ -438,13 +438,19 @@ export const GuestUpload = () => {
                 <button onClick={() => setCurrentView('menu')} className="p-2 bg-white/5 rounded-xl"><X size={20} /></button>
                 <h3 className="text-xl font-bold">Escribir Mensaje</h3>
               </div>
-              <textarea 
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                autoFocus
-                className="w-full h-48 bg-white/5 border border-white/10 rounded-3xl p-6 text-xl focus:outline-none focus:border-green-500/50 transition-all resize-none placeholder:text-white/10"
-                placeholder="Dedica unas palabras..."
-              />
+              <div className="relative">
+                <textarea 
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  maxLength={110}
+                  autoFocus
+                  className="w-full h-48 bg-white/5 border border-white/10 rounded-3xl p-6 text-xl focus:outline-none focus:border-green-500/50 transition-all resize-none placeholder:text-white/10"
+                  placeholder="Dedica unas palabras..."
+                />
+                <div className="absolute bottom-4 right-6 text-[10px] font-black tracking-widest text-white/20 uppercase">
+                  {message.length} / 110
+                </div>
+              </div>
               <button 
                 onClick={handleSendMessage}
                 disabled={!message.trim() || uploading}
