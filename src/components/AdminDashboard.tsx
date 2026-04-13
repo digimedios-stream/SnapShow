@@ -216,27 +216,29 @@ export const AdminDashboard = () => {
       flyer.style.zIndex = '-1000';
 
       const flyerContent = (isFlipped: boolean) => `
-        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; ${isFlipped ? 'transform: rotate(180deg);' : ''}">
-          <div style="border: 8px solid black; padding: 30px; width: 85%; height: 85%; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; ${isFlipped ? 'transform: rotate(180deg);' : ''}">
+          <div style="border: 6px solid black; padding: 25px; width: 65%; height: 90%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box;">
             <div style="text-align: center;">
-              <h1 style="font-size: 42px; font-weight: 900; margin-bottom: 0px; text-transform: uppercase; letter-spacing: -1px; line-height: 1;">SnapShow</h1>
-              <p style="font-size: 14px; font-weight: 900; background: black; color: white; display: inline-block; padding: 2px 10px; border-radius: 4px; margin-top: 5px;">EN VIVO</p>
-              <p style="font-size: 18px; font-weight: bold; margin-top: 15px; color: #666;">${eventName}</p>
+              <h1 style="font-size: 34px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: -1px; line-height: 1;">SnapShow</h1>
+              <div style="background: black; color: white; display: inline-block; padding: 1px 8px; border-radius: 3px; margin-top: 4px;">
+                <p style="font-size: 11px; font-weight: 900; margin: 0; letter-spacing: 2px;">EN VIVO</p>
+              </div>
+              <p style="font-size: 14px; font-weight: bold; margin-top: 10px; color: #444; line-height: 1.2;">${eventName}</p>
             </div>
             
-            <div style="border: 4px solid black; padding: 10px; background: white;">
-              <img src="${qrUrl}" style="width: 220px; height: 220px; display: block;" crossorigin="anonymous" />
+            <div style="border: 3px solid black; padding: 8px; background: white; margin: 10px 0;">
+              <img src="${qrUrl}" style="width: 160px; height: 160px; display: block;" crossorigin="anonymous" />
             </div>
 
             <div style="text-align: center;">
-              <p style="font-size: 14px; font-weight: 900; margin-bottom: 10px;">¡SUBE TUS FOTOS Y VIDEOS!</p>
-              <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">
-                1. Escanea • 2. Elige • 3. ¡Listo!
+              <p style="font-size: 12px; font-weight: 900; margin-bottom: 6px; letter-spacing: 0.5px;">¡SUBE TUS FOTOS Y VIDEOS!</p>
+              <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold;">
+                Escanéa • Elige • ¡Listo!
               </div>
             </div>
 
-            <footer style="width: 100%; border-top: 1px solid #eee; padding-top: 15px;">
-              <p style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #ccc;">Digimedios Apps © 2026</p>
+            <footer style="width: 100%; border-top: 1px solid #eee; padding-top: 10px;">
+              <p style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #bbb;">Digimedios Apps © 2026</p>
             </footer>
           </div>
         </div>
@@ -244,24 +246,26 @@ export const AdminDashboard = () => {
 
       flyer.innerHTML = `
         <!-- Pestaña de Base Superior -->
-        <div style="height: 120px; border-bottom: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
-          Doble aquí para la base (Pestaña A)
+        <div style="height: 100px; border-bottom: 1px dashed #eee; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ddd; font-size: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
+          <span>PESTAÑA DE SOPORTE A</span>
+          <span style="font-size: 7px;">(Doblar hacia adentro)</span>
         </div>
 
         <!-- Cara A (Invertida) -->
         ${flyerContent(true)}
 
         <!-- Línea de Doblez Central -->
-        <div style="height: 0; border-top: 1px dashed black; position: relative;">
-          <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: white; padding: 0 15px; font-size: 10px; font-weight: bold; color: black; text-transform: uppercase;">Doble por la mitad (Lomo)</span>
+        <div style="height: 0; border-top: 1px dashed #ccc; position: relative;">
+          <span style="position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; font-size: 8px; font-weight: bold; color: #999; text-transform: uppercase; letter-spacing: 1px;">Lomo del Flyer (Doble aquí)</span>
         </div>
 
         <!-- Cara B (Normal) -->
         ${flyerContent(false)}
 
         <!-- Pestaña de Base Inferior -->
-        <div style="height: 120px; border-top: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
-          Doble aquí para la base (Pestaña B)
+        <div style="height: 100px; border-top: 1px dashed #eee; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ddd; font-size: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
+          <span>PESTAÑA DE SOPORTE B</span>
+          <span style="font-size: 7px;">(Doblar hacia adentro)</span>
         </div>
       `;
 
