@@ -114,6 +114,27 @@ export const AdminDashboard = () => {
   };
 
   // ... (funciones handleApprove, openPopOut, copyGuestLink, handleUpload, handleAddMessage siguen igual)
+  const handleDeleteEvent = async (id: string, name: string) => {
+    if (!confirm(`⚠️ ¿ESTÁS SEGURO?\n\nEsto borrará permanentemente el evento "${name.toUpperCase()}", todas sus fotos, videos y configuraciones.\n\nEsta acción no se puede deshacer.`)) return;
+    
+    try {
+      // 1. Borrar configuraciones
+      await supabase.from('event_settings').delete().eq('event_id', id);
+      // 2. Borrar contenido
+      await supabase.from('content_items').delete().eq('event_id', id);
+      // 3. Borrar el evento
+      const { error } = await supabase.from('events').delete().eq('id', id);
+
+      if (error) throw error;
+      
+      alert('✅ Evento eliminado completamente.');
+      if (selectedEventId === id) setSelectedEventId(null);
+      fetchInitialData();
+    } catch (err: any) {
+      alert('Error al eliminar: ' + err.message);
+    }
+  };
+
   const handleApprove = async (id: string) => {
     await supabase.from('content_items').update({ is_approved: true }).eq('id', id);
     if (previewItem?.id === id) setPreviewItem(null);
@@ -277,15 +298,28 @@ export const AdminDashboard = () => {
           <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><Sparkles size={20} /></div>
           <h2 className="text-xl font-bold text-gradient-primary tracking-tight">SnapShow</h2>
         </div>
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 space-y-2 overflow-y-auto pr-2">
           {events.map((event) => (
-             <button
-                key={event.id}
-                onClick={() => setSelectedEventId(event.id)}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${selectedEventId === event.id ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/5'}`}
-             >
-               {event.name}
-             </button>
+             <div key={event.id} className="group flex items-center gap-1">
+               <button
+                  onClick={() => setSelectedEventId(event.id)}
+                  className={`flex-1 text-left px-4 py-3 rounded-xl transition-all ${selectedEventId === event.id ? 'bg-indigo-500/20 text-indigo-400 font-bold' : 'hover:bg-white/5 text-white/60'}`}
+               >
+                 <span className="truncate block w-32">{event.name}</span>
+               </button>
+               {isAdmin && (
+                 <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteEvent(event.id, event.name);
+                  }}
+                  className="p-2 text-white/10 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                  title="Eliminar Evento"
+                 >
+                   <Trash2 size={16} />
+                 </button>
+               )}
+             </div>
           ))}
           {isAdmin && (
             <button 
@@ -293,10 +327,10 @@ export const AdminDashboard = () => {
                 const name = prompt('Nombre del nuevo evento:');
                 if (name) handleCreateEvent(name);
               }}
-              className="w-full mt-4 border border-dashed border-white/20 p-3 rounded-lg text-white/40 hover:text-indigo-400 hover:border-indigo-400/40 transition-all flex items-center justify-center gap-2"
+              className="w-full mt-4 border border-dashed border-white/10 p-4 rounded-xl text-white/20 hover:text-indigo-400 hover:border-indigo-400/40 transition-all flex items-center justify-center gap-2 group"
             >
-              <Sparkles size={14} />
-              <span className="text-xs font-bold uppercase tracking-widest">Crear Evento</span>
+              <Plus size={16} className="group-hover:rotate-90 transition-transform" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Nuevo Evento</span>
             </button>
           )}
         </nav>
@@ -327,139 +361,94 @@ export const AdminDashboard = () => {
           <div className="max-w-5xl mx-auto">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
               <div>
-                <h1 className="text-3xl font-bold">{currentEvent?.name}</h1>
-                <p className="text-white/40">Versión 3.0 • Sistema Profesional</p>
+                <h1 className="text-3xl font-bold tracking-tight">{currentEvent?.name}</h1>
+                <p className="text-white/40 text-xs font-black uppercase tracking-widest mt-1">Versión 3.0 • Dash Control</p>
               </div>
-              <div className="flex flex-wrap gap-4">
-                <button onClick={openPopOut} className="flex items-center gap-2 glass px-4 py-2 text-purple-400 hover:bg-white/5 transition-all"><Monitor size={18} /> Pantalla</button>
+              <div className="flex flex-wrap gap-3">
+                <button onClick={openPopOut} className="flex items-center gap-2 glass px-4 py-2 text-purple-400 hover:bg-white/5 transition-all text-sm font-bold"><Monitor size={16} /> Pantalla</button>
                 <button 
                   onClick={() => {
                     const url = `${window.location.origin}/screen?id=${selectedEventId}`;
                     navigator.clipboard.writeText(url);
                     alert('Link copiado para vMix / OBS');
                   }} 
-                  className="flex items-center gap-2 glass px-4 py-2 text-blue-400 hover:bg-white/5 transition-all"
+                  className="flex items-center gap-2 glass px-4 py-2 text-blue-400 hover:bg-white/5 transition-all text-sm font-bold"
                 >
-                  <LinkIcon size={18} /> link OBS
+                  <LinkIcon size={16} /> link OBS
                 </button>
-                <button onClick={() => setShowPrintModal(true)} className="flex items-center gap-2 glass px-4 py-2 text-amber-500 hover:bg-white/5"><Printer size={18} /> Flyer QR</button>
-                <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 hover:bg-white/5"><RefreshCw size={18} /> Reiniciar</button>
-                <button onClick={handleDownloadAll} className="flex items-center gap-2 glass px-4 py-2 text-green-400 hover:bg-green-500/10 transition-all font-bold">
-                   {isDownloading ? <Loader2 className="animate-spin" /> : <Download size={18} />} ZIP
+                <button onClick={() => setShowPrintModal(true)} className="flex items-center gap-2 glass px-4 py-2 text-amber-500 hover:bg-white/5 text-sm font-bold"><Printer size={16} /> Flyer QR</button>
+                <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 hover:bg-white/5 text-sm font-bold"><RefreshCw size={16} /> Reiniciar</button>
+                <button onClick={handleDownloadAll} className="flex items-center gap-2 glass px-4 py-2 text-green-400 hover:bg-green-500/10 transition-all text-sm font-bold">
+                   {isDownloading ? <Loader2 className="animate-spin" /> : <Download size={16} />} ZIP
                 </button>
-                <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-2 glass px-3 py-2 text-white/40"><Settings size={18} /></button>
+                <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-2 glass px-3 py-2 text-white/40 hover:text-white transition-all"><Settings size={18} /></button>
               </div>
             </header>
 
             {/* Acciones Rápidas */}
             <div className="flex flex-wrap gap-4 mb-12">
-                {/* BOTONES DE CARGA ADMINISTRADOR */}
-                <label className="px-6 py-3 bg-amber-500 text-black rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-400 transition-all text-sm cursor-pointer">
-                  <ImageIcon size={18} /> SUBIR FOTO
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleUpload(file);
-                    }}
-                  />
+                <label className="px-8 py-4 bg-amber-500 text-black rounded-2xl font-black flex items-center gap-3 hover:bg-amber-400 transition-all text-sm cursor-pointer shadow-lg shadow-amber-500/10">
+                  <ImageIcon size={20} /> SUBIR FOTO
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
                 </label>
 
-                <label className="px-6 py-3 bg-indigo-500 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-400 transition-all text-sm cursor-pointer">
-                  <Video size={18} /> SUBIR VÍDEO
-                  <input 
-                    type="file" 
-                    accept="video/*" 
-                    className="hidden" 
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleUpload(file);
-                    }}
-                  />
+                <label className="px-8 py-4 bg-indigo-500 text-white rounded-2xl font-black flex items-center gap-3 hover:bg-indigo-400 transition-all text-sm cursor-pointer shadow-lg shadow-indigo-500/10">
+                  <Video size={20} /> SUBIR VÍDEO
+                  <input type="file" accept="video/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
                 </label>
 
                 <button 
-                  onClick={() => {
-                    const msg = prompt('Escribe el mensaje para la pantalla:');
-                    if (msg) handleAddMessage(msg);
-                  }}
-                  className="px-6 py-3 bg-green-500 text-black rounded-2xl font-bold flex items-center gap-2 hover:bg-green-400 transition-all text-sm"
+                  onClick={() => { const msg = prompt('Escribe el mensaje para la pantalla:'); if (msg) handleAddMessage(msg); }}
+                  className="px-8 py-4 bg-green-500 text-black rounded-2xl font-black flex items-center gap-3 hover:bg-green-400 transition-all text-sm shadow-lg shadow-green-500/10"
                 >
-                  <MessageSquare size={18} /> NUEVO MENSAJE
+                  <MessageSquare size={20} /> NUEVO MENSAJE
                 </button>
               </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-bold mb-6">Contenido en vivo ({contentItems.length})</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-6">Contenido del Evento ({contentItems.length})</h3>
               {contentItems.map((item) => (
-                <div key={item.id} className="glass-card p-4 flex items-center gap-4 hover:border-white/10 transition-all">
+                <div key={item.id} className="glass group p-4 flex items-center gap-4 hover:border-white/20 transition-all border border-white/5 rounded-3xl">
                   <div 
                     onClick={() => setPreviewItem(item)}
-                    className="w-20 h-20 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/5 cursor-zoom-in hover:scale-105 transition-all group"
+                    className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center overflow-hidden border border-white/10 cursor-zoom-in hover:scale-105 transition-all relative group/thumb"
                   >
-                    {item.type === 'image' && <img src={item.content_url} className="w-full h-full object-cover" />}
+                    {item.type === 'image' && <img src={item.content_url} className="w-full h-full object-cover opacity-80 group-hover/thumb:opacity-100" />}
                     {item.type === 'video' && (
-                      <video 
-                        src={item.content_url} 
-                        className="w-full h-full object-cover" 
-                        muted 
-                        loop 
-                        autoPlay 
-                        playsInline
-                      />
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-500/10 text-indigo-400">
+                        <Video size={24} />
+                        <span className="text-[8px] font-black mt-1">VID</span>
+                      </div>
                     )}
-                    {item.type === 'message' && <div className="p-3 text-2xl">💬</div>}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    {item.type === 'message' && <MessageSquare className="text-green-500" size={24} />}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
                        <Play size={20} className="text-white fill-white" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold truncate text-lg">
-                      {item.type === 'message' ? item.text_content : 'Multimeadia'}
+                      {item.type === 'message' ? item.text_content : 'Archivo Multimedia'}
                     </p>
                     <div className="flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest mt-1">
                       <div className="flex items-center gap-2">
-                        <span>Vistas: <span className={item.display_count >= 3 ? 'text-blue-400' : 'text-green-500'}>{item.display_count || 0}</span></span>
+                        <span className="text-white/40">Vistas: <span className={item.display_count >= 3 ? 'text-indigo-400' : 'text-green-500'}>{item.display_count || 0}</span> / 3</span>
                         {item.display_count > 0 && (
-                          <button 
-                            onClick={() => supabase.from('content_items').update({ display_count: 0 }).eq('id', item.id).then(() => fetchContent(selectedEventId!))}
-                            title="Reiniciar vistas"
-                            className="p-1 bg-white/5 rounded hover:bg-white/20 text-white/40"
-                          >
-                            <RefreshCw size={10} />
-                          </button>
+                          <button onClick={() => supabase.from('content_items').update({ display_count: 0 }).eq('id', item.id).then(() => fetchContent(selectedEventId!))} className="p-1 hover:text-white transition-colors"><RefreshCw size={10} /></button>
                         )}
                       </div>
                       <span className={
-                        !item.is_approved ? 'text-amber-500 italic' :
-                        item.display_count >= 3 ? 'text-white/40' : 'text-green-500'
+                        !item.is_approved ? 'text-amber-500' :
+                        item.display_count >= 3 ? 'text-white/20' : 'text-green-500'
                       }>
-                        {!item.is_approved ? '● Pendiente' : 
-                         item.display_count >= 3 ? '● Ciclo Completo (Pausado)' : '● En Pantalla'}
+                        ● {!item.is_approved ? 'Por aprobar' : item.display_count >= 3 ? 'Finalizado' : 'Activo'}
                       </span>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     {!item.is_approved && (
-                      <button 
-                        onClick={() => handleApprove(item.id)}
-                        className="px-6 py-3 bg-green-500 text-black rounded-xl font-black text-xs hover:bg-green-400 transition-all flex items-center gap-2"
-                      >
-                        <Check size={16} /> APROBAR
-                      </button>
+                      <button onClick={() => handleApprove(item.id)} className="px-5 py-3 bg-green-500 text-black rounded-xl font-black text-[10px] hover:bg-green-400 transition-all flex items-center gap-2"><Check size={14} /> LANZAR</button>
                     )}
-                    <button 
-                      onClick={() => {
-                        if(confirm('¿Seguro que quieres borrarlo?')) {
-                          supabase.from('content_items').delete().eq('id', item.id).then(() => fetchContent(selectedEventId!));
-                        }
-                      }}
-                      className="p-3 bg-white/5 text-white/20 rounded-xl hover:bg-red-500/20 hover:text-red-500 transition-all"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <button onClick={() => { if(confirm('¿Borrar este archivo?')) { supabase.from('content_items').delete().eq('id', item.id).then(() => fetchContent(selectedEventId!)); } }} className="p-3 bg-white/5 text-white/20 rounded-xl hover:bg-red-500/20 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
                   </div>
                 </div>
               ))}

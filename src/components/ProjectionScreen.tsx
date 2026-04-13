@@ -114,8 +114,7 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
   return (
     <div className="h-screen w-screen text-white overflow-hidden relative">
       <BackgroundAnimations 
-        category={(settings?.theme_id as ThemeCategory) || 'generic'} 
-        variant={settings?.background_variant || 0} 
+        theme={(settings?.background_animation) || 'aurora'} 
       />
 
       {/* Floating Emojis Layer */}

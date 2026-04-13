@@ -164,10 +164,12 @@ export const SettingsPanel = ({ eventId, onClose }: SettingsPanelProps) => {
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-indigo-500/50 focus:outline-none appearance-none text-sm font-bold"
           >
             <option value="aurora">Aurora Galáctica</option>
-            <option value="lights">Luces Neón</option>
-            <option value="bokeh">Burbujas (Bokeh)</option>
-            <option value="particles">Magia Estelar (Partículas)</option>
-            <option value="none">Sin fondo (Limpio)</option>
+            <option value="lights">Luces Neón (Azul/Violeta)</option>
+            <option value="gold">Partículas Oro (Festivo)</option>
+            <option value="bokeh">Burbujas Suaves (Bokeh)</option>
+            <option value="stars">Noche Estrellada</option>
+            <option value="mesh">Mesh Abstracto (Moderno)</option>
+            <option value="none">Color Sólido (Limpio)</option>
           </select>
         </div>
 

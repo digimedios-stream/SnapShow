@@ -1,83 +1,126 @@
 import { motion } from 'framer-motion';
 
-export type ThemeCategory = 'quince' | 'wedding' | 'anniversary' | 'graduation' | 'carnaval' | 'festival' | 'newyear' | 'generic';
+export type AnimationTheme = 'aurora' | 'lights' | 'gold' | 'bokeh' | 'stars' | 'mesh' | 'none';
 
 interface BackgroundAnimationsProps {
-  category?: ThemeCategory;
-  variant?: number; // 0 to 3
+  theme?: AnimationTheme;
 }
 
-const THEME_CONFIG: Record<ThemeCategory, string[]> = {
-  quince: [
-    'linear-gradient(135deg, #2d1b4e 0%, #1a1a1a 100%)', // Midnight Purple
-    'radial-gradient(circle at center, #4c1d95 0%, #000000 100%)', // Violet Deep
-    'linear-gradient(45deg, #1e1b4b 0%, #312e81 100%)', // Indigo Night
-    'conic-gradient(from 180deg at 50% 50%, #1a1033 0%, #3b0764 100%)' // Royal Amethyst
-  ],
-  wedding: [
-    'linear-gradient(135deg, #1a1a1a 0%, #262626 100%)', // Classic Dark
-    'radial-gradient(circle at 50% 50%, #1c1917 0%, #0c0a09 100%)', // Stone Elegance
-    'linear-gradient(to right, #0f172a, #1e293b)', // Navy Silk
-    'radial-gradient(ellipse at bottom, #1e1b4b 0%, #020617 100%)' // Deep Occan
-  ],
-  anniversary: [
-    'linear-gradient(135deg, #451a03 0%, #000000 100%)', // Bronze/Gold
-    'radial-gradient(circle at center, #422006 0%, #000000 100%)', // Amber Shadow
-    'linear-gradient(45deg, #1a1a1a 0%, #2d2d2d 100%)', // Charcoal
-    'conic-gradient(from 0deg, #1a1a1a, #261a0d, #1a1a1a)' // Wine/Leather
-  ],
-  graduation: [
-    'linear-gradient(135deg, #064e3b 0%, #020617 100%)', // Emerald Night
-    'radial-gradient(circle at 10% 10%, #0f172a 0%, #000000 100%)', // Tech Blue
-    'linear-gradient(45deg, #0c4a6e 0%, #082f49 100%)', // Sky Deep
-    'linear-gradient(to bottom, #1e293b, #0f172a)' // Academic Slate
-  ],
-  carnaval: [
-    'linear-gradient(135deg, #701a75 0%, #4a044e 100%)', // Fuchsia Rush
-    'radial-gradient(circle at bottom left, #1e1b4b 0%, #701a75 100%)', // Neon Mix
-    'linear-gradient(45deg, #4c1d95 0%, #be185d 100%)', // Energy Pulse
-    'radial-gradient(circle at center, #831843 0%, #000000 100%)' // Ruby Night
-  ],
-  festival: [
-    'linear-gradient(135deg, #020617 0%, #1e1b4b 100%)', // Festival Blue
-    'radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000000 100%)', // Stage Black
-    'linear-gradient(45deg, #1e1b4b 0%, #312e81 100%)', // Crowd Indigo
-    'linear-gradient(to right, #020617, #1e293b)' // Modern Event
-  ],
-  newyear: [
-    'linear-gradient(135deg, #1a1a1a 0%, #422006 100%)', // Golden Spark
-    'radial-gradient(circle at center, #171717 0%, #0a0a0a 100%)', // Tuxedo
-    'linear-gradient(45deg, #000000 0%, #1e1b4b 100%)', // Champagne Night
-    'radial-gradient(ellipse at top, #262626 0%, #000000 100%)' // Luxury Grey
-  ],
-  generic: [
-    'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
-    'radial-gradient(circle at center, #1e1b4b 0%, #020617 100%)',
-    'linear-gradient(45deg, #000000 0%, #1a1a1a 100%)',
-    'linear-gradient(to bottom, #111111, #000000)'
-  ]
-};
+export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsProps) => {
+  const renderTheme = () => {
+    switch (theme) {
+      case 'aurora':
+        return (
+          <div className="absolute inset-0 bg-[#020617] overflow-hidden">
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.2, 1],
+                rotate: [0, 90, 0],
+                opacity: [0.3, 0.5, 0.3]
+              }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_#4f46e5_0%,_transparent_50%)] blur-[120px]"
+            />
+            <motion.div 
+              animate={{ 
+                scale: [1.2, 1, 1.2],
+                rotate: [0, -90, 0],
+                opacity: [0.2, 0.4, 0.2]
+              }}
+              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+              className="absolute -bottom-[50%] -right-[50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_#9333ea_0%,_transparent_50%)] blur-[120px]"
+            />
+          </div>
+        );
 
-export const BackgroundAnimations = ({ category = 'generic', variant = 0 }: BackgroundAnimationsProps) => {
-  const bg = THEME_CONFIG[category]?.[variant] || THEME_CONFIG.generic[0];
+      case 'lights':
+        return (
+          <div className="absolute inset-0 bg-black">
+             <div className="absolute inset-0 opacity-30 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
+             <motion.div 
+               animate={{ x: ['-100%', '100%'] }}
+               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+               className="absolute top-0 w-1/2 h-full bg-gradient-to-r from-transparent via-blue-500/20 to-transparent skew-x-12"
+             />
+             <motion.div 
+               animate={{ x: ['100%', '-100%'] }}
+               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+               className="absolute bottom-0 w-1/2 h-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent -skew-x-12"
+             />
+          </div>
+        );
+
+      case 'gold':
+        return (
+          <div className="absolute inset-0 bg-[#1a0f00]">
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ y: '110%', x: `${Math.random() * 100}%`, opacity: 0 }}
+                animate={{ y: '-10%', opacity: [0, 1, 0] }}
+                transition={{ duration: 5 + Math.random() * 5, repeat: Infinity, delay: Math.random() * 5 }}
+                className="absolute w-1 h-1 bg-amber-400 rounded-full blur-[1px] shadow-[0_0_10px_#fbbf24]"
+              />
+            ))}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] opacity-60" />
+          </div>
+        );
+
+      case 'stars':
+        return (
+          <div className="absolute inset-0 bg-[#020617]">
+             {[...Array(50)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{ opacity: [0.2, 1, 0.2] }}
+                transition={{ duration: 2 + Math.random() * 3, repeat: Infinity }}
+                style={{ top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%` }}
+                className="absolute w-1 h-1 bg-white rounded-full"
+              />
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 to-transparent" />
+          </div>
+        );
+
+      case 'mesh':
+        return (
+          <div className="absolute inset-0 bg-zinc-950 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-40">
+              <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/30 blur-[120px] animate-pulse" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/30 blur-[120px] animate-pulse" />
+              <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px]" />
+            </div>
+          </div>
+        );
+
+      case 'bokeh':
+        return (
+          <div className="absolute inset-0 bg-slate-950">
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{ 
+                  y: [Math.random() * 100 + '%', Math.random() * 100 + '%'],
+                  x: [Math.random() * 100 + '%', Math.random() * 100 + '%'],
+                  scale: [1, 1.5, 1]
+                }}
+                transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute w-64 h-64 rounded-full bg-white/5 blur-[60px]"
+              />
+            ))}
+          </div>
+        );
+
+      default:
+        return <div className="absolute inset-0 bg-[#0a0a0a]" />;
+    }
+  };
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" style={{ background: bg }}>
-      {/* Capa de textura sutil (Grano/Ruido) */}
+    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+      {renderTheme()}
+      {/* Grano sutil global */}
       <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-
-      {/* Sombras de movimiento lento (Sin usar Blur pesado) */}
-      <motion.div
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.1, 0.2, 0.1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute inset-0 bg-white/5 radial-gradient(circle at 50% 50%, white, transparent)"
-      />
-      
-      {/* Efecto de partículas reactivas (Solo si hay actividad, implementado vía broadcast luego) */}
-      <div id="emoji-container" className="absolute inset-0" />
     </div>
   );
 };
