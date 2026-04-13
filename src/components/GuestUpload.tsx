@@ -240,8 +240,11 @@ export const GuestUpload = () => {
       <main className="flex-1 flex flex-col p-6 max-w-md mx-auto w-full">
         {/* Header */}
         <header className="text-center mb-10 pt-4">
+          <div className="inline-block px-3 py-1 bg-white/5 rounded-full mb-3 border border-white/10">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">SnapShow</span>
+          </div>
           <h1 className="text-4xl font-black mb-2 tracking-tight drop-shadow-lg text-white">
-            {eventData?.name || 'SnapShow'}
+            {eventData?.name || 'Evento'}
           </h1>
           <p className="text-white/40 text-[10px] mt-1 uppercase tracking-[0.2em] font-black">🌟 Invitado Especial 🌟</p>
         </header>
@@ -478,8 +481,8 @@ export const GuestUpload = () => {
         )}
       </main>
 
-      <footer className="p-8 text-center text-white/10 font-bold uppercase tracking-widest text-[10px]">
-        SnapShow System &bull; {new Date().getFullYear()}
+      <footer className="p-8 text-center text-white/30 font-bold uppercase tracking-[0.2em] text-[10px]">
+        Digimedios Apps &bull; 2026
       </footer>
     </div>
   );

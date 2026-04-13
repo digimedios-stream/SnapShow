@@ -415,10 +415,7 @@ export const AdminDashboard = () => {
                   >
                     {item.type === 'image' && <img src={item.content_url} className="w-full h-full object-cover opacity-80 group-hover/thumb:opacity-100" />}
                     {item.type === 'video' && (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-500/10 text-indigo-400">
-                        <Video size={24} />
-                        <span className="text-[8px] font-black mt-1">VID</span>
-                      </div>
+                      <video src={item.content_url} className="w-full h-full object-cover opacity-80" />
                     )}
                     {item.type === 'message' && <MessageSquare className="text-green-500" size={24} />}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
