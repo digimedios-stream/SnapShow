@@ -206,55 +206,85 @@ export const AdminDashboard = () => {
       flyer.style.position = 'fixed';
       flyer.style.left = '-9999px';
       flyer.style.top = '0';
-      flyer.style.width = '794px';
-      flyer.style.height = '1123px';
+      flyer.style.width = '794px'; // A4 width at 96 DPI
+      flyer.style.height = '1123px'; // A4 height at 96 DPI
       flyer.style.backgroundColor = 'white';
       flyer.style.color = 'black';
-      flyer.style.padding = '80px';
-      flyer.style.textAlign = 'center';
-      flyer.style.fontFamily = 'Arial, sans-serif';
+      flyer.style.fontFamily = "'Inter', Arial, sans-serif";
       flyer.style.display = 'flex';
       flyer.style.flexDirection = 'column';
-      flyer.style.alignItems = 'center';
-      flyer.style.justifyContent = 'center';
       flyer.style.zIndex = '-1000';
 
+      const flyerContent = (isFlipped: boolean) => `
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; ${isFlipped ? 'transform: rotate(180deg);' : ''}">
+          <div style="border: 8px solid black; padding: 30px; width: 85%; height: 85%; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+            <div style="text-align: center;">
+              <h1 style="font-size: 42px; font-weight: 900; margin-bottom: 0px; text-transform: uppercase; letter-spacing: -1px; line-height: 1;">SnapShow</h1>
+              <p style="font-size: 14px; font-weight: 900; background: black; color: white; display: inline-block; padding: 2px 10px; border-radius: 4px; margin-top: 5px;">EN VIVO</p>
+              <p style="font-size: 18px; font-weight: bold; margin-top: 15px; color: #666;">${eventName}</p>
+            </div>
+            
+            <div style="border: 4px solid black; padding: 10px; background: white;">
+              <img src="${qrUrl}" style="width: 220px; height: 220px; display: block;" crossorigin="anonymous" />
+            </div>
+
+            <div style="text-align: center;">
+              <p style="font-size: 14px; font-weight: 900; margin-bottom: 10px;">¡SUBE TUS FOTOS Y VIDEOS!</p>
+              <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">
+                1. Escanea • 2. Elige • 3. ¡Listo!
+              </div>
+            </div>
+
+            <footer style="width: 100%; border-top: 1px solid #eee; padding-top: 15px;">
+              <p style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #ccc;">Digimedios Apps © 2026</p>
+            </footer>
+          </div>
+        </div>
+      `;
+
       flyer.innerHTML = `
-        <div style="border: 15px solid black; padding: 60px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
-          <div style="width: 100%;">
-            <h1 style="font-size: 64px; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; letter-spacing: -2px;">SnapShow En Vivo</h1>
-            <p style="font-size: 28px; font-weight: bold; margin-bottom: 40px; color: #444;">${eventName}</p>
-          </div>
-          <div style="background-color: black; color: white; padding: 15px 40px; border-radius: 100px; font-size: 22px; font-weight: 900; margin-bottom: 50px;">
-            ¡SUBE TUS FOTOS Y VIDEOS!
-          </div>
-          <div style="border: 10px solid black; padding: 15px; background: white;">
-            <img src="${qrUrl}" style="width: 380px; height: 380px; display: block;" crossorigin="anonymous" />
-          </div>
-          <div style="margin-top: 50px; text-align: left; width: 100%; padding-left: 40px;">
-            <p style="font-size: 24px; margin: 15px 0; font-weight: bold;">1. Escanea el código con tu cámara</p>
-            <p style="font-size: 24px; margin: 15px 0; font-weight: bold;">2. Elige tu mejor foto o video</p>
-            <p style="font-size: 24px; margin: 15px 0; font-weight: bold;">3. ¡Míralo en pantalla al instante!</p>
-          </div>
-          <footer style="margin-top: 60px; width: 100%; border-top: 2px solid #eee;">
-            <p style="font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; color: #888; margin-top: 30px;">Digimedios Apps © 2026</p>
-          </footer>
+        <!-- Pestaña de Base Superior -->
+        <div style="height: 120px; border-bottom: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
+          Doble aquí para la base (Pestaña A)
+        </div>
+
+        <!-- Cara A (Invertida) -->
+        ${flyerContent(true)}
+
+        <!-- Línea de Doblez Central -->
+        <div style="height: 0; border-top: 1px dashed black; position: relative;">
+          <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: white; padding: 0 15px; font-size: 10px; font-weight: bold; color: black; text-transform: uppercase;">Doble por la mitad (Lomo)</span>
+        </div>
+
+        <!-- Cara B (Normal) -->
+        ${flyerContent(false)}
+
+        <!-- Pestaña de Base Inferior -->
+        <div style="height: 120px; border-top: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
+          Doble aquí para la base (Pestaña B)
         </div>
       `;
 
       document.body.appendChild(flyer);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const canvas = await html2canvas(flyer, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      
+      // Esperar a que el QR cargue y fuentes procesen
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const canvas = await html2canvas(flyer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Flyer-QR-${eventName}.pdf`);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+      pdf.save(`Piramide-QR-${eventName}.pdf`);
+      
       document.body.removeChild(flyer);
     } catch (err) {
-      alert('Error al generar el PDF.');
+      console.error('Error:', err);
+      alert('Error al generar la pirámide PDF.');
     } finally {
       setIsGeneratingFlyer(false);
     }
