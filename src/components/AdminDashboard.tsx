@@ -311,8 +311,18 @@ export const AdminDashboard = () => {
                 <p className="text-white/40 text-[10px] uppercase font-black tracking-widest mt-1">Dash Control</p>
               </div>
               <div className="flex gap-3">
-                <button onClick={openPopOut} className="flex items-center gap-2 glass px-4 py-2 text-purple-400 font-bold text-sm"><Monitor size={16} /> Pantalla</button>
-                <button onClick={handleDownloadFlyer} disabled={isGeneratingFlyer} className="flex items-center gap-2 glass px-4 py-2 text-amber-500 font-bold text-sm">
+                <button onClick={openPopOut} className="flex items-center gap-2 glass px-4 py-2 text-purple-400 font-bold text-sm hover:bg-white/5 transition-all"><Monitor size={16} /> Pantalla</button>
+                <button 
+                  onClick={() => {
+                    const url = `${window.location.origin}/screen?id=${selectedEventId}`;
+                    navigator.clipboard.writeText(url);
+                    alert('✅ Link copiado para vMix / OBS');
+                  }} 
+                  className="flex items-center gap-2 glass px-4 py-2 text-blue-400 font-bold text-sm hover:bg-white/5 transition-all"
+                >
+                  <LinkIcon size={16} /> Link OBS
+                </button>
+                <button onClick={handleDownloadFlyer} disabled={isGeneratingFlyer} className="flex items-center gap-2 glass px-4 py-2 text-amber-500 font-bold text-sm hover:bg-white/5 transition-all">
                   {isGeneratingFlyer ? <Loader2 className="animate-spin" /> : <Printer size={16} />} Flyer QR
                 </button>
                 <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 font-bold text-sm"><RefreshCw size={16} /> Reiniciar</button>
