@@ -217,28 +217,29 @@ export const AdminDashboard = () => {
 
       const flyerContent = (isFlipped: boolean) => `
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; ${isFlipped ? 'transform: rotate(180deg);' : ''}">
-          <div style="border: 6px solid black; padding: 25px; width: 65%; height: 90%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box;">
-            <div style="text-align: center;">
-              <h1 style="font-size: 34px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: -1px; line-height: 1;">SnapShow</h1>
-              <div style="background: black; color: white; display: inline-block; padding: 1px 8px; border-radius: 3px; margin-top: 4px;">
-                <p style="font-size: 11px; font-weight: 900; margin: 0; letter-spacing: 2px;">EN VIVO</p>
+          <div style="border: 6px solid black; padding: 30px 20px; width: 65%; height: 90%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box;">
+            <div style="text-align: center; width: 100%;">
+              <h1 style="font-size: 38px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: -1.5px; line-height: 0.9;">SnapShow</h1>
+              <p style="font-size: 11px; font-weight: 800; color: #666; margin-top: 5px; letter-spacing: 1px; text-transform: uppercase;">Digimedios Apps - 2026</p>
+              
+              <div style="margin-top: 25px; padding: 0 10px;">
+                <p style="font-size: 26px; font-weight: 900; color: #000; line-height: 1.1; text-transform: uppercase; letter-spacing: -0.5px;">${eventName}</p>
               </div>
-              <p style="font-size: 14px; font-weight: bold; margin-top: 10px; color: #444; line-height: 1.2;">${eventName}</p>
             </div>
             
-            <div style="border: 3px solid black; padding: 8px; background: white; margin: 10px 0;">
-              <img src="${qrUrl}" style="width: 160px; height: 160px; display: block;" crossorigin="anonymous" />
+            <div style="border: 4px solid black; padding: 10px; background: white; margin: 15px 0;">
+              <img src="${qrUrl}" style="width: 170px; height: 170px; display: block;" crossorigin="anonymous" />
             </div>
 
             <div style="text-align: center;">
-              <p style="font-size: 12px; font-weight: 900; margin-bottom: 6px; letter-spacing: 0.5px;">¡SUBE TUS FOTOS Y VIDEOS!</p>
-              <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold;">
+              <p style="font-size: 13px; font-weight: 900; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase;">¡SUBE TUS FOTOS Y VIDEOS!</p>
+              <div style="font-size: 10px; color: #333; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; background: #f0f0f0; padding: 3px 10px; border-radius: 4px;">
                 Escanéa • Elige • ¡Listo!
               </div>
             </div>
 
-            <footer style="width: 100%; border-top: 1px solid #eee; padding-top: 10px;">
-              <p style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #bbb;">Digimedios Apps © 2026</p>
+            <footer style="width: 100%; border-top: 1px solid #eee; padding-top: 12px; margin-top: 10px;">
+              <p style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #ccc; text-align: center;">SnapShow Event System</p>
             </footer>
           </div>
         </div>
