@@ -140,6 +140,7 @@ const VideoBackground = ({ index }: { index: number }) => {
   useEffect(() => {
     // Obtenemos la URL pública desde el bucket 'backgrounds'
     const { data } = supabase.storage.from('backgrounds').getPublicUrl(`bg${index}.mp4`);
+    console.log("Cargando video de fondo:", data?.publicUrl);
     if (data?.publicUrl) {
       setVideoUrl(data.publicUrl);
     }
@@ -148,25 +149,26 @@ const VideoBackground = ({ index }: { index: number }) => {
   if (!videoUrl) return <div className="absolute inset-0 bg-black" />;
 
   return (
-    <div className="absolute inset-0 bg-black overflow-hidden">
+    <div className="absolute inset-0 bg-black overflow-hidden flex items-center justify-center">
       <AnimatePresence mode="wait">
         <motion.video
           key={videoUrl}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
+          animate={{ opacity: 0.6 }} // Subimos un poco la opacidad para que se vea bien
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
           src={videoUrl}
           autoPlay
           muted
           loop
-          className="absolute inset-0 w-full h-full object-cover"
+          playsInline
+          onError={(e) => console.error("Error al cargar el video de fondo:", e)}
+          className="min-w-full min-h-full w-auto h-auto object-cover absolute"
         />
       </AnimatePresence>
       
       {/* Overlay para mejorar legibilidad */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-      <div className="absolute inset-0 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
     </div>
   );
 };
