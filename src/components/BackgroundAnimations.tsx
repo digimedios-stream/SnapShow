@@ -140,35 +140,33 @@ const VideoBackground = ({ index }: { index: number }) => {
   useEffect(() => {
     // Obtenemos la URL pública desde el bucket 'backgrounds'
     const { data } = supabase.storage.from('backgrounds').getPublicUrl(`bg${index}.mp4`);
-    console.log("Intentando cargar video de fondo:", data?.publicUrl);
     if (data?.publicUrl) {
       setVideoUrl(data.publicUrl);
     }
   }, [index]);
 
-  if (!videoUrl) return <div className="absolute inset-0 bg-indigo-900/20" />;
+  if (!videoUrl) return <div className="absolute inset-0 bg-black/20" />;
 
   return (
-    <div className="absolute inset-0 overflow-hidden flex items-center justify-center bg-black">
+    <div className="absolute inset-0 overflow-hidden flex items-center justify-center">
       <AnimatePresence mode="wait">
         <motion.video
           key={videoUrl}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }} // Subimos a 1 para asegurar visibilidad en la prueba
+          animate={{ opacity: 0.5 }} // Opacidad elegante para ambientes de evento
           exit={{ opacity: 0 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 1.5 }}
           src={videoUrl}
           autoPlay
           muted
           loop
           playsInline
-          onError={(e) => console.error("Error al cargar el video de fondo:", e)}
           className="min-w-full min-h-full w-auto h-auto object-cover absolute"
         />
       </AnimatePresence>
       
-      {/* Overlay para mejorar legibilidad */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
+      {/* Overlay oscuro para mejorar contraste del QR */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
     </div>
   );
 };
