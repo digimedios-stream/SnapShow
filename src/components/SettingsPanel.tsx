@@ -169,6 +169,11 @@ export const SettingsPanel = ({ eventId, onClose }: SettingsPanelProps) => {
             <option value="bokeh">Burbujas Suaves (Bokeh)</option>
             <option value="stars">Noche Estrellada</option>
             <option value="mesh">Mesh Abstracto (Moderno)</option>
+            <optgroup label="🎞️ VIDEOS DE FONDO">
+              {[...Array(10)].map((_, i) => (
+                <option key={i} value={`video_${i + 1}`}>Video de Fondo {i + 1}</option>
+              ))}
+            </optgroup>
             <option value="none">Color Sólido (Limpio)</option>
           </select>
         </div>

@@ -1,6 +1,8 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
-export type AnimationTheme = 'aurora' | 'lights' | 'gold' | 'bokeh' | 'stars' | 'mesh' | 'none';
+export type AnimationTheme = 'aurora' | 'lights' | 'gold' | 'bokeh' | 'stars' | 'mesh' | 'video' | 'none';
 
 interface BackgroundAnimationsProps {
   theme?: AnimationTheme;
@@ -111,7 +113,14 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
           </div>
         );
 
+      case 'video':
+        return <VideoBackground index={1} />;
+
       default:
+        if (theme.startsWith('video_')) {
+          const index = parseInt(theme.split('_')[1]);
+          return <VideoBackground index={index} />;
+        }
         return <div className="absolute inset-0 bg-[#0a0a0a]" />;
     }
   };
@@ -121,6 +130,43 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
       {renderTheme()}
       {/* Grano sutil global */}
       <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+    </div>
+  );
+};
+
+const VideoBackground = ({ index }: { index: number }) => {
+  const [videoUrl, setVideoUrl] = useState<string>('');
+
+  useEffect(() => {
+    // Obtenemos la URL pública desde el bucket 'backgrounds'
+    const { data } = supabase.storage.from('backgrounds').getPublicUrl(`bg${index}.mp4`);
+    if (data?.publicUrl) {
+      setVideoUrl(data.publicUrl);
+    }
+  }, [index]);
+
+  if (!videoUrl) return <div className="absolute inset-0 bg-black" />;
+
+  return (
+    <div className="absolute inset-0 bg-black overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.video
+          key={videoUrl}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1 }}
+          src={videoUrl}
+          autoPlay
+          muted
+          loop
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </AnimatePresence>
+      
+      {/* Overlay para mejorar legibilidad */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+      <div className="absolute inset-0 backdrop-blur-[2px]" />
     </div>
   );
 };
