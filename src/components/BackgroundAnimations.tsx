@@ -126,7 +126,7 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
   };
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
       {renderTheme()}
       {/* Grano sutil global */}
       <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
@@ -140,21 +140,21 @@ const VideoBackground = ({ index }: { index: number }) => {
   useEffect(() => {
     // Obtenemos la URL pública desde el bucket 'backgrounds'
     const { data } = supabase.storage.from('backgrounds').getPublicUrl(`bg${index}.mp4`);
-    console.log("Cargando video de fondo:", data?.publicUrl);
+    console.log("Intentando cargar video de fondo:", data?.publicUrl);
     if (data?.publicUrl) {
       setVideoUrl(data.publicUrl);
     }
   }, [index]);
 
-  if (!videoUrl) return <div className="absolute inset-0 bg-black" />;
+  if (!videoUrl) return <div className="absolute inset-0 bg-indigo-900/20" />;
 
   return (
-    <div className="absolute inset-0 bg-black overflow-hidden flex items-center justify-center">
+    <div className="absolute inset-0 overflow-hidden flex items-center justify-center bg-black">
       <AnimatePresence mode="wait">
         <motion.video
           key={videoUrl}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }} // Subimos un poco la opacidad para que se vea bien
+          animate={{ opacity: 1 }} // Subimos a 1 para asegurar visibilidad en la prueba
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
           src={videoUrl}
