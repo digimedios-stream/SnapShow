@@ -146,19 +146,36 @@ export const AdminDashboard = () => {
 
   const handleUpload = async (file: File) => {
     if (!selectedEventId) return;
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    
+    const isVideo = file.type.startsWith('video/');
+    const bucket = isVideo ? 'videos' : 'images';
+    const fileExt = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `${selectedEventId}/${fileName}`;
-    const { error: uploadError } = await supabase.storage.from('event-content').upload(filePath, file);
-    if (!uploadError) {
-      const { data: { publicUrl } } = supabase.storage.from('event-content').getPublicUrl(filePath);
-      await supabase.from('content_items').insert({
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+      const { error: dbError } = await supabase.from('content_items').insert({
         event_id: selectedEventId,
-        type: file.type.startsWith('video') ? 'video' : 'image',
+        type: isVideo ? 'video' : 'image',
         content_url: publicUrl,
         is_approved: false
       });
+
+      if (dbError) throw dbError;
+      
       fetchContent(selectedEventId);
+      // alert('✅ Archivo subido (Pendiente de aprobación).');
+    } catch (err: any) {
+      console.error('Error uploading:', err);
+      alert('Error al subir: ' + err.message);
     }
   };
 
