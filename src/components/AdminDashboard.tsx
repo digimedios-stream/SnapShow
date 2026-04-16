@@ -18,6 +18,7 @@ export const AdminDashboard = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<any>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingFlyer, setIsGeneratingFlyer] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -146,6 +147,7 @@ export const AdminDashboard = () => {
 
   const handleUpload = async (file: File) => {
     if (!selectedEventId) return;
+    setIsUploading(true);
     
     const isVideo = file.type.startsWith('video/');
     const bucket = isVideo ? 'videos' : 'images';
@@ -172,10 +174,11 @@ export const AdminDashboard = () => {
       if (dbError) throw dbError;
       
       fetchContent(selectedEventId);
-      // alert('✅ Archivo subido (Pendiente de aprobación).');
     } catch (err: any) {
       console.error('Error uploading:', err);
       alert('Error al subir: ' + err.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -386,15 +389,17 @@ export const AdminDashboard = () => {
             </header>
 
             <div className="flex gap-4 mb-12">
-               <label className="flex-1 py-4 bg-amber-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 cursor-pointer hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/10">
-                 <ImageIcon size={20} /> SUBIR FOTO
-                 <input type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
+               <label className={`flex-1 py-4 bg-amber-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 cursor-pointer hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/10 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                 {isUploading ? <Loader2 className="animate-spin" size={20} /> : <ImageIcon size={20} />} 
+                 {isUploading ? 'SUBIENDO...' : 'SUBIR FOTO'}
+                 <input type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
                </label>
-               <label className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl font-black flex items-center justify-center gap-3 cursor-pointer hover:bg-indigo-400 transition-all shadow-lg shadow-indigo-500/10">
-                 <Video size={20} /> SUBIR VÍDEO
-                 <input type="file" accept="video/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
+               <label className={`flex-1 py-4 bg-indigo-500 text-white rounded-2xl font-black flex items-center justify-center gap-3 cursor-pointer hover:bg-indigo-400 transition-all shadow-lg shadow-indigo-500/10 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                 {isUploading ? <Loader2 className="animate-spin" size={20} /> : <Video size={20} />}
+                 {isUploading ? 'SUBIENDO...' : 'SUBIR VÍDEO'}
+                 <input type="file" accept="video/*" className="hidden" disabled={isUploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
                </label>
-               <button onClick={() => { const msg = prompt('Su mensaje:'); if (msg) handleAddMessage(msg); }} className="flex-1 py-4 bg-green-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 shadow-lg shadow-green-500/10 hover:bg-green-400 transition-all">
+               <button onClick={() => { const msg = prompt('Su mensaje:'); if (msg) handleAddMessage(msg); }} disabled={isUploading} className="flex-1 py-4 bg-green-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 shadow-lg shadow-green-500/10 hover:bg-green-400 transition-all disabled:opacity-50">
                  <MessageSquare size={20} /> MENSAJE
                </button>
             </div>
