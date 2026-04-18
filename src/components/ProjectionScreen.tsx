@@ -12,6 +12,7 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
   const [settings, setSettings] = useState<any>(null);
   const [eventName, setEventName] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [emojis, setEmojis] = useState<{ id: number; char: string; x: number }[]>([]);
 
   useEffect(() => {
@@ -39,8 +40,8 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
             (item.display_count || 0) < maxDisplays
           )
           .sort((a: any, b: any) => {
-             // Prioridad a lo menos visto
-             return (a.display_count || 0) - (b.display_count || 0);
+             // ORDEN SECUENCIAL: Por fecha de creación para respetar el ingreso
+             return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           });
         
         setItems(validItems);
@@ -65,19 +66,39 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
       })
       .subscribe();
 
+    const syncChannel = supabase.channel(`sync_${eventId}`).subscribe();
+
     return () => {
       supabase.removeChannel(itemsChannel);
       supabase.removeChannel(settingsChannel);
       supabase.removeChannel(emojiChannel);
+      supabase.removeChannel(syncChannel);
     };
   }, [eventId]);
 
-  // Asegura que el indice siempre sea valido si la lista de items cambia
+  // Sincronizar activeId con el índice actual para robustez ante cambios en la lista
   useEffect(() => {
-    if (items.length > 0 && currentIndex >= items.length) {
-      setCurrentIndex(0);
+    if (items.length > 0) {
+      const foundIndex = items.findIndex(it => it.id === activeId);
+      if (foundIndex !== -1) {
+        setCurrentIndex(foundIndex);
+        // EMITIR ESTADO AL MONITOR:
+        supabase.channel(`sync_${eventId}`).send({
+          type: 'broadcast',
+          event: 'sync',
+          payload: { itemId: activeId }
+        });
+      } else {
+        // Si el elemento activo desapareció (llegó al límite), mantenemos el mismo índice 
+        // para mostrar el que ocupó su lugar, o reseteamos a 0 si estamos al final.
+        if (currentIndex >= items.length) {
+          setCurrentIndex(0);
+        }
+        // Actualizamos el activeId con lo que haya en la posición actual
+        setActiveId(items[currentIndex]?.id || items[0]?.id || null);
+      }
     }
-  }, [items]);
+  }, [items, activeId]);
 
   useEffect(() => {
     // Si no hay items, no hay nada que temporizar
@@ -100,13 +121,11 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
        await supabase.rpc('increment_display_count', { item_id: currentItem.id });
     }
 
-    // 2. Si hay mas de uno, pasamos al siguiente indice
+    // 2. Pasamos al siguiente ID
     if (items.length > 1) {
-      setCurrentIndex((prev) => (prev + 1) % items.length);
+      const nextIndex = (currentIndex + 1) % items.length;
+      setActiveId(items[nextIndex].id);
     } 
-    // Si solo hay uno, al haber sumado la vista en el paso 1, 
-    // fetchData (por realtime) pronto lo quitara de la lista 'items' 
-    // y el render mostrara el empty-state.
   };
 
   const currentItem = items[currentIndex] || { type: 'message', text_content: 'SnapShow • Esperando contenido...' };

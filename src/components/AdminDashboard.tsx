@@ -4,6 +4,7 @@ import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, Exter
 import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
+import { LiveMonitor } from './LiveMonitor';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
@@ -21,6 +22,7 @@ export const AdminDashboard = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isGeneratingFlyer, setIsGeneratingFlyer] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMonitorVisible, setIsMonitorVisible] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -328,7 +330,7 @@ export const AdminDashboard = () => {
         <ThemeOnboarding eventId={currentEvent.id} initialName={currentEvent.name} onComplete={() => { setOnboardingFinished(true); window.location.reload(); }} />
       )}
 
-      <aside className="w-64 border-r border-white/10 p-6 flex flex-col">
+      <aside className="w-80 border-r border-white/10 p-6 flex flex-col">
         <div className="flex items-center gap-2 mb-8 px-2 text-indigo-400">
           <Sparkles size={20} />
           <h2 className="text-xl font-bold tracking-tight">SnapShow</h2>
@@ -348,6 +350,7 @@ export const AdminDashboard = () => {
             <button onClick={() => { const name = prompt('Nombre del nuevo evento:'); if (name) handleCreateEvent(name); }} className="w-full mt-4 border border-dashed border-white/10 p-4 rounded-xl text-white/20 hover:text-indigo-400 flex items-center justify-center gap-2 group italic text-xs capitalize"><Plus size={14} /> Nuevo Evento</button>
           )}
         </nav>
+
         <button onClick={() => supabase.auth.signOut()} className="mt-6 flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400 border-t border-white/5 pt-6 font-bold text-xs uppercase tracking-widest"><LogOut size={16} /> Salir</button>
       </aside>
 
@@ -383,6 +386,12 @@ export const AdminDashboard = () => {
                 <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 font-bold text-sm"><RefreshCw size={16} /> Reiniciar</button>
                 <button onClick={handleDownloadAll} disabled={isDownloading} className="flex items-center gap-2 glass px-4 py-2 text-green-400 font-bold text-sm">
                   {isDownloading ? <Loader2 className="animate-spin" /> : <Download size={16} />} ZIP
+                </button>
+                <button 
+                  onClick={() => setIsMonitorVisible(!isMonitorVisible)} 
+                  className={`flex items-center gap-2 glass px-4 py-2 font-bold text-sm transition-all ${isMonitorVisible ? 'bg-red-500/20 text-red-400 border-red-500/50' : 'text-indigo-400 hover:bg-white/5'}`}
+                >
+                  <Monitor size={16} /> {isMonitorVisible ? 'Cerrar Monitor' : 'Abrir Monitor'}
                 </button>
                 <button onClick={() => setIsSettingsOpen(true)} className="glass px-3 py-2 text-white/40 hover:text-white"><Settings size={18} /></button>
               </div>
@@ -457,6 +466,12 @@ export const AdminDashboard = () => {
                </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isMonitorVisible && selectedEventId && (
+          <LiveMonitor eventId={selectedEventId} onClose={() => setIsMonitorVisible(false)} />
         )}
       </AnimatePresence>
     </div>

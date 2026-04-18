@@ -153,29 +153,49 @@ export const SettingsPanel = ({ eventId, onClose }: SettingsPanelProps) => {
            </div>
         )}
 
-        {/* Background Animation */}
-        <div className="space-y-3">
+        {/* Background Animation Selection */}
+        <div className="space-y-4">
           <label className="text-[10px] font-black uppercase text-white/40 tracking-widest flex items-center gap-2">
             <Palette size={14} /> Animación de Fondo
           </label>
-          <select 
-            value={settings.background_animation}
-            onChange={(e) => setSettings({ ...settings, background_animation: e.target.value })}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-indigo-500/50 focus:outline-none appearance-none text-sm font-bold"
-          >
-            <option value="aurora">Aurora Galáctica</option>
-            <option value="lights">Luces Neón (Azul/Violeta)</option>
-            <option value="gold">Partículas Oro (Festivo)</option>
-            <option value="bokeh">Burbujas Suaves (Bokeh)</option>
-            <option value="stars">Noche Estrellada</option>
-            <option value="mesh">Mesh Abstracto (Moderno)</option>
-            <optgroup label="🎞️ VIDEOS DE FONDO">
-              {[...Array(10)].map((_, i) => (
-                <option key={i} value={`video_${i + 1}`}>Video de Fondo {i + 1}</option>
-              ))}
-            </optgroup>
-            <option value="none">Color Sólido (Limpio)</option>
-          </select>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { id: 'aurora', label: 'Aurora', color: 'from-blue-600 to-purple-600' },
+              { id: 'lights', label: 'Neón', color: 'bg-blue-500/20 border-blue-500/50' },
+              { id: 'gold', label: 'Festivo', color: 'from-amber-600 to-yellow-400' },
+              { id: 'bokeh', label: 'Burbujas', color: 'bg-slate-700' },
+              { id: 'stars', label: 'Estrellas', color: 'bg-[#020617]' },
+              { id: 'mesh', label: 'Mesh', color: 'from-indigo-600 via-purple-600 to-pink-600' },
+              { id: 'none', label: 'Limpio', color: 'bg-zinc-800' },
+            ].map((theme) => (
+              <button
+                key={theme.id}
+                onClick={() => setSettings({ ...settings, background_animation: theme.id })}
+                className={`group relative h-20 rounded-xl border transition-all overflow-hidden flex flex-col items-center justify-center gap-1 ${settings.background_animation === theme.id ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-white/10 hover:border-white/20'}`}
+              >
+                <div className={`absolute inset-0 opacity-40 bg-gradient-to-br ${theme.color} ${theme.id === 'lights' || theme.id === 'bokeh' || theme.id === 'stars' || theme.id === 'none' ? theme.color : ''}`} />
+                <span className="relative z-10 text-[10px] font-black uppercase tracking-tighter text-white">{theme.label}</span>
+                {settings.background_animation === theme.id && <div className="relative z-10 w-1 h-1 bg-white rounded-full animate-ping" />}
+              </button>
+            ))}
+          </div>
+
+          <label className="text-[10px] font-black uppercase text-white/40 tracking-widest mt-4 block">Videos de Fondo (HD)</label>
+          <div className="grid grid-cols-5 gap-2">
+            {[...Array(10)].map((_, i) => {
+              const val = `video_${i + 1}`;
+              return (
+                <button
+                  key={val}
+                  onClick={() => setSettings({ ...settings, background_animation: val })}
+                  className={`aspect-square rounded-lg border flex items-center justify-center transition-all ${settings.background_animation === val ? 'bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/40 scale-110' : 'bg-white/5 border-white/5 text-white/20 hover:bg-white/10'}`}
+                >
+                  <span className="text-xs font-black">{i + 1}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Slide Duration */}
