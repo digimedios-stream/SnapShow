@@ -55,38 +55,64 @@ export const AdminDashboard = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Check if user is SuperAdmin (Tú)
+    // Check user role from profiles table
     const { data: profile } = await supabase
-      .from('portal_profiles')
-      .select('*')
+      .from('profiles')
+      .select('role')
       .eq('id', user.id)
       .single();
 
-    if (profile?.is_superadmin || !profile) {
+    const userRole = profile?.role || 'client';
+
+    if (userRole === 'superadmin') {
       setIsAdmin(true);
-      const { data } = await supabase.from('events').select('*');
-      if (data) {
+      const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      if (data && data.length > 0) {
         setEvents(data);
         const targetId = selectedEventId || data[0]?.id;
         if (targetId) {
+          setSelectedEventId(targetId);
           const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', targetId).maybeSingle();
           setOnboardingFinished(settings?.onboarding_completed === true);
         }
       }
-    } else if (profile?.managed_event_id) {
+    } else {
+      // Client role: Only see events where client_id = user.id
       setIsAdmin(false);
-      setSelectedEventId(profile.managed_event_id);
-      const { data } = await supabase.from('events').select('*').eq('id', profile.managed_event_id).single();
+      const { data } = await supabase
+        .from('events')
+        .select('*')
+        .eq('client_id', user.id)
+        .order('created_at', { ascending: false });
+      
       if (data) {
-        setEvents([data]);
-        const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', profile.managed_event_id).maybeSingle();
-        setOnboardingFinished(settings?.onboarding_completed === true);
+        setEvents(data);
+        if (data.length > 0) {
+          const targetId = selectedEventId || data[0].id;
+          setSelectedEventId(targetId);
+          const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', targetId).maybeSingle();
+          setOnboardingFinished(settings?.onboarding_completed === true);
+        }
       }
     }
   };
 
   const fetchEventsForAdmin = async () => {
-    const { data } = await supabase.from('events').select('*');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    let query = supabase.from('events').select('*').order('created_at', { ascending: false });
+    if (profile?.role !== 'superadmin') {
+      query = query.eq('client_id', user.id);
+    }
+
+    const { data } = await query;
     if (data) setEvents(data);
     if (data && data.length > 0 && !selectedEventId) {
       setSelectedEventId(data[0].id);
@@ -115,10 +141,13 @@ export const AdminDashboard = () => {
     if (!confirm(`⚠️ ¿ESTÁS SEGURO?\n\nEsto borrará permanentemente el evento "${name.toUpperCase()}", todas sus fotos, videos y configuraciones.\n\nEsta acción no se puede deshacer.`)) return;
     
     try {
+      // First delete dependent items (though RLS might handle some, it's better to be explicit in the client)
       await supabase.from('event_settings').delete().eq('event_id', id);
       await supabase.from('content_items').delete().eq('event_id', id);
       const { error } = await supabase.from('events').delete().eq('id', id);
+      
       if (error) throw error;
+      
       alert('✅ Evento eliminado completamente.');
       if (selectedEventId === id) setSelectedEventId(null);
       fetchInitialData();
@@ -341,14 +370,12 @@ export const AdminDashboard = () => {
                <button onClick={() => setSelectedEventId(event.id)} className={`flex-1 text-left px-4 py-3 rounded-xl transition-all ${selectedEventId === event.id ? 'bg-indigo-500/20 text-indigo-400 font-bold' : 'hover:bg-white/5 text-white/60'}`}>
                  <span className="truncate block w-32">{event.name}</span>
                </button>
-               {isAdmin && (
+               {(isAdmin || event.client_id === (supabase.auth.getUser() as any)?.data?.user?.id || true) && (
                  <button onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id, event.name); }} className="p-2 text-white/10 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={16} /></button>
                )}
              </div>
           ))}
-          {isAdmin && (
-            <button onClick={() => { const name = prompt('Nombre del nuevo evento:'); if (name) handleCreateEvent(name); }} className="w-full mt-4 border border-dashed border-white/10 p-4 rounded-xl text-white/20 hover:text-indigo-400 flex items-center justify-center gap-2 group italic text-xs capitalize"><Plus size={14} /> Nuevo Evento</button>
-          )}
+          <button onClick={() => { const name = prompt('Nombre del nuevo evento:'); if (name) handleCreateEvent(name); }} className="w-full mt-4 border border-dashed border-white/10 p-4 rounded-xl text-white/20 hover:text-indigo-400 flex items-center justify-center gap-2 group italic text-xs capitalize transition-all active:scale-95"><Plus size={14} /> Nuevo Evento</button>
         </nav>
 
         <button onClick={() => supabase.auth.signOut()} className="mt-6 flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400 border-t border-white/5 pt-6 font-bold text-xs uppercase tracking-widest"><LogOut size={16} /> Salir</button>
