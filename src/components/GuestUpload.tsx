@@ -487,8 +487,9 @@ export const GuestUpload = () => {
         )}
       </main>
 
-      <footer className="p-8 text-center text-white/30 font-bold uppercase tracking-[0.2em] text-[10px]">
-        Digimedios Apps &bull; 2026
+      <footer className="p-10 text-center space-y-1">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/10">© SnapShow 2026</p>
+        <p className="text-[10px] font-bold text-white/5 uppercase tracking-widest">Desarrollado por Digimedios Apps</p>
       </footer>
     </div>
   );

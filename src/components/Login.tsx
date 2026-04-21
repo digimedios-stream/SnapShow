@@ -82,9 +82,10 @@ export const Login = () => {
           </button>
         </form>
 
-        <p className="mt-8 text-center text-xs text-white/20">
-          Protegido por Supabase Auth
-        </p>
+        <footer className="mt-10 text-center space-y-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/10">© SnapShow 2026</p>
+          <p className="text-[10px] font-bold text-indigo-500/20 uppercase tracking-widest">Desarrollado por Digimedios Apps</p>
+        </footer>
       </div>
     </div>
   );

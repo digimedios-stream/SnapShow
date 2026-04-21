@@ -379,6 +379,11 @@ export const AdminDashboard = () => {
         </nav>
 
         <button onClick={() => supabase.auth.signOut()} className="mt-6 flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400 border-t border-white/5 pt-6 font-bold text-xs uppercase tracking-widest"><LogOut size={16} /> Salir</button>
+        
+        <footer className="mt-8 pt-6 border-t border-white/5 text-center px-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">© SnapShow 2026</p>
+          <p className="text-[10px] font-bold text-indigo-500/40 uppercase tracking-widest">Desarrollado por Digimedios Apps</p>
+        </footer>
       </aside>
 
       <main className="flex-1 p-8 overflow-y-auto">
