@@ -147,22 +147,27 @@ export const AdminDashboard = () => {
         .eq('event_id', selectedEventId);
 
       if (items && items.length > 0) {
+        const getCleanPath = (url: string) => {
+          if (!url) return null;
+          const filename = url.split('/').pop()?.split('?')[0];
+          return filename ? `${selectedEventId}/${filename}` : null;
+        };
+
         const imagePaths = items
           .filter(it => it.type === 'image' && it.content_url)
-          .map(it => it.content_url.split('/').pop());
+          .map(it => getCleanPath(it.content_url))
+          .filter(Boolean) as string[];
         
         const videoPaths = items
           .filter(it => it.type === 'video' && it.content_url)
-          .map(it => it.content_url.split('/').pop());
+          .map(it => getCleanPath(it.content_url))
+          .filter(Boolean) as string[];
 
-        // Borrar de storage en carpetas del evento
         if (imagePaths.length > 0) {
-          const fullImagePaths = imagePaths.map(p => `${selectedEventId}/${p}`);
-          await supabase.storage.from('images').remove(fullImagePaths);
+          await supabase.storage.from('images').remove(imagePaths);
         }
         if (videoPaths.length > 0) {
-          const fullVideoPaths = videoPaths.map(p => `${selectedEventId}/${p}`);
-          await supabase.storage.from('videos').remove(fullVideoPaths);
+          await supabase.storage.from('videos').remove(videoPaths);
         }
       }
 
