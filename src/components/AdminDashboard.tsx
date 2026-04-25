@@ -23,6 +23,8 @@ export const AdminDashboard = () => {
   const [isGeneratingFlyer, setIsGeneratingFlyer] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMonitorVisible, setIsMonitorVisible] = useState(false);
+  const [showFinished, setShowFinished] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -54,6 +56,7 @@ export const AdminDashboard = () => {
   const fetchInitialData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    setUserId(user.id);
 
     // Check user role from profiles table
     const { data: profile } = await supabase
@@ -441,7 +444,7 @@ export const AdminDashboard = () => {
                <button onClick={() => setSelectedEventId(event.id)} className={`flex-1 text-left px-4 py-3 rounded-xl transition-all ${selectedEventId === event.id ? 'bg-indigo-500/20 text-indigo-400 font-bold' : 'hover:bg-white/5 text-white/60'}`}>
                  <span className="truncate block w-32">{event.name}</span>
                </button>
-               {(isAdmin || event.client_id === (supabase.auth.getUser() as any)?.data?.user?.id || true) && (
+                {(isAdmin || event.client_id === userId) && (
                  <button onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id, event.name); }} className="p-2 text-white/10 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={16} /></button>
                )}
              </div>
