@@ -143,10 +143,21 @@ export const AdminDashboard = () => {
       // 1. Limpiar Storage (Buckets: images y videos)
       const buckets = ['images', 'videos'];
       for (const bucket of buckets) {
-        const { data: files } = await supabase.storage.from(bucket).list(selectedEventId!);
+        const { data: files, error: listError } = await supabase.storage.from(bucket).list(selectedEventId!);
+        
+        if (listError) {
+          console.error(`Error listando bucket ${bucket}:`, listError);
+          continue;
+        }
+
         if (files && files.length > 0) {
           const pathsToDelete = files.map(f => `${selectedEventId}/${f.name}`);
-          await supabase.storage.from(bucket).remove(pathsToDelete);
+          const { error: delError } = await supabase.storage.from(bucket).remove(pathsToDelete);
+          
+          if (delError) {
+            alert(`Error al borrar archivos físicos (${bucket}): ` + delError.message);
+            console.error(`Error eliminando en bucket ${bucket}:`, delError);
+          }
         }
       }
 
