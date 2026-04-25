@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, Eraser, AlertTriangle } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
@@ -66,7 +66,7 @@ export const AdminDashboard = () => {
 
     if (userRole === 'superadmin') {
       setIsAdmin(true);
-      const { data } = await supabase.from('events').select('*, event_settings(*)').order('created_at', { ascending: false });
+      const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
       if (data && data.length > 0) {
         setEvents(data);
         const targetId = selectedEventId || data[0]?.id;
@@ -81,7 +81,7 @@ export const AdminDashboard = () => {
       setIsAdmin(false);
       const { data } = await supabase
         .from('events')
-        .select('*, event_settings(*)')
+        .select('*')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false });
       
@@ -107,7 +107,7 @@ export const AdminDashboard = () => {
       .eq('id', user.id)
       .single();
 
-    let query = supabase.from('events').select('*, event_settings(*)').order('created_at', { ascending: false });
+    let query = supabase.from('events').select('*').order('created_at', { ascending: false });
     if (profile?.role !== 'superadmin') {
       query = query.eq('client_id', user.id);
     }
@@ -130,8 +130,8 @@ export const AdminDashboard = () => {
     if (!confirm('¿Limpiar pantalla? Las fotos actuales dejarán de aparecer para dar lugar a las nuevas, pero NO se borrarán de la base de datos.')) return;
     
     // Obtenemos el límite de visualizaciones para "saltarlo"
-    const settings = currentEvent?.event_settings;
-    const limit = (Array.isArray(settings) ? settings[0]?.max_displays : settings?.max_displays) || 3;
+    const { data: settings } = await supabase.from('event_settings').select('max_displays').eq('event_id', selectedEventId).maybeSingle();
+    const limit = settings?.max_displays || 3;
     
     await supabase.from('content_items')
       .update({ display_count: limit })
@@ -416,6 +416,8 @@ export const AdminDashboard = () => {
   };
 
   const currentEvent = events.find(e => e.id === selectedEventId);
+  const maxDisplays = 3; // Valor por defecto simple para evitar errores de renderizado complejo
+
   const getOnboardingStatus = () => {
     if (!currentEvent?.event_settings) return false;
     const settings = currentEvent.event_settings;
@@ -485,7 +487,7 @@ export const AdminDashboard = () => {
                   {isGeneratingFlyer ? <Loader2 className="animate-spin" /> : <Printer size={16} />} Flyer QR
                 </button>
                 <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 font-bold text-sm hover:bg-white/5 transition-all" title="Reiniciar ciclo de visualización"><RefreshCw size={16} /> Reiniciar</button>
-                <button onClick={handleClearEvent} className="flex items-center gap-2 glass px-4 py-2 text-indigo-300 font-bold text-sm hover:bg-white/5 transition-all" title="Finalizar contenido actual sin borrarlo"><Eraser size={16} /> Limpiar</button>
+                <button onClick={handleClearEvent} className="flex items-center gap-2 glass px-4 py-2 text-indigo-300 font-bold text-sm hover:bg-white/5 transition-all" title="Finalizar contenido actual sin borrarlo"><RefreshCw size={16} /> Limpiar</button>
                 <button onClick={handleDownloadAll} disabled={isDownloading} className="flex items-center gap-2 glass px-4 py-2 text-green-400 font-bold text-sm hover:bg-white/5 transition-all">
                   {isDownloading ? <Loader2 className="animate-spin" /> : <Download size={16} />} ZIP
                 </button>
@@ -521,7 +523,7 @@ export const AdminDashboard = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 font-mono tracking-tighter">
-                  Contenido del Evento ({contentItems.filter(it => (it.display_count || 0) < ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3)).length})
+                  Contenido del Evento ({contentItems.filter(it => (it.display_count || 0) < maxDisplays).length})
                 </h3>
                 <button 
                   onClick={() => setShowFinished(!showFinished)}
@@ -532,7 +534,7 @@ export const AdminDashboard = () => {
               </div>
               
               {contentItems
-                .filter(item => showFinished || (item.display_count || 0) < ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3))
+                .filter(item => showFinished || (item.display_count || 0) < maxDisplays)
                 .map((item) => (
                 <div key={item.id} className="glass group p-4 flex items-center gap-4 hover:border-white/20 transition-all border border-white/5 rounded-3xl">
                   <div onClick={() => setPreviewItem(item)} className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center overflow-hidden border border-white/10 cursor-zoom-in relative group/thumb">
@@ -544,9 +546,9 @@ export const AdminDashboard = () => {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold truncate text-lg">{item.type === 'message' ? item.text_content : item.type === 'image' ? '📸 FOTO DE INVITADO' : '🎥 VÍDEO DE INVITADO'}</p>
                     <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest mt-1">
-                      <span className="text-white/40">Vistas: <span className={(item.display_count || 0) >= ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3) ? 'text-indigo-400' : 'text-green-500'}>{item.display_count || 0}</span> / {(Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3}</span>
-                      <span className={!item.is_approved ? 'text-amber-500' : (item.display_count || 0) >= ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3) ? 'text-white/20' : 'text-green-500'}>
-                        ● {!item.is_approved ? 'Por aprobar' : (item.display_count || 0) >= ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3) ? 'Finalizado' : 'Activo'}
+                      <span className="text-white/40">Vistas: <span className={(item.display_count || 0) >= maxDisplays ? 'text-indigo-400' : 'text-green-500'}>{item.display_count || 0}</span> / {maxDisplays}</span>
+                      <span className={!item.is_approved ? 'text-amber-500' : (item.display_count || 0) >= maxDisplays ? 'text-white/20' : 'text-green-500'}>
+                        ● {!item.is_approved ? 'Por aprobar' : (item.display_count || 0) >= maxDisplays ? 'Finalizado' : 'Activo'}
                       </span>
                     </div>
                   </div>
