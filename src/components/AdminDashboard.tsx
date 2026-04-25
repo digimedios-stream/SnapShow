@@ -430,20 +430,20 @@ export const AdminDashboard = () => {
         <button onClick={() => supabase.auth.signOut()} className="mt-6 flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400 border-t border-white/5 pt-6 font-bold text-xs uppercase tracking-widest"><LogOut size={16} /> Salir</button>
         
         <footer className="mt-8 pt-8 pb-4 text-center px-6 relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
           <div className="space-y-1.5">
-            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">
-              © SnapShow <span className="text-indigo-500/80">2026</span>
+            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-white/60 drop-shadow-lg">
+              © SnapShow <span className="text-indigo-500">2026</span>
             </p>
-            <div className="flex items-center justify-center gap-2">
-              <span className="h-[1px] w-4 bg-white/5" />
-              <p className="text-[9px] font-bold text-white/10 uppercase tracking-[0.4em]">
-                Premium <span className="text-white/30">Experience</span>
+            <div className="flex items-center justify-center gap-2 opacity-80">
+              <span className="h-[1px] w-6 bg-white/10" />
+              <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.4em]">
+                Premium <span className="text-white/60">Experience</span>
               </p>
-              <span className="h-[1px] w-4 bg-white/5" />
+              <span className="h-[1px] w-6 bg-white/10" />
             </div>
-            <p className="text-[8px] font-medium text-white/10 uppercase tracking-[0.2em] mt-4">
-              POWERED BY DIGIMEDIOS
+            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.25em] mt-4">
+              POWERED BY <span className="text-indigo-500/30">DIGIMEDIOS APPS</span>
             </p>
           </div>
         </footer>

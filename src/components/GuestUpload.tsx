@@ -488,16 +488,16 @@ export const GuestUpload = () => {
       </main>
 
       <footer className="mt-auto py-10 px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-sm -z-10" />
+        <div className="absolute inset-0 bg-white/[0.03] backdrop-blur-md -z-10" />
         <div className="max-w-xs mx-auto space-y-1 relative">
-          <div className="h-[1px] w-12 bg-white/10 mx-auto mb-6" />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 drop-shadow-sm">
-            © SnapShow <span className={`text-${themeColor}-500/60`}>2026</span>
+          <div className="h-[1px] w-16 bg-white/20 mx-auto mb-6" />
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60 drop-shadow-lg">
+            © SnapShow <span className={`text-${themeColor}-400`}>2026</span>
           </p>
-          <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.4em] pt-1">
-            Diseño por <span className="text-white/40">Digimedios</span>
+          <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] pt-1">
+            POWERED BY <span className="text-white/50">DIGIMEDIOS APPS</span>
           </p>
-          <div className={`absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-${themeColor}-500/5 rounded-full blur-3xl`} />
+          <div className={`absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-${themeColor}-500/10 rounded-full blur-3xl`} />
         </div>
       </footer>
     </div>

@@ -83,13 +83,13 @@ export const Login = () => {
         </form>
 
         <footer className="mt-12 text-center relative">
-          <div className="h-[1px] w-8 bg-white/5 mx-auto mb-6" />
+          <div className="h-[1px] w-12 bg-white/10 mx-auto mb-6" />
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
-              © SnapShow <span className="text-indigo-500/40">2026</span>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 drop-shadow-lg">
+              © SnapShow <span className="text-indigo-500/60">2026</span>
             </p>
-            <p className="text-[9px] font-bold text-white/5 uppercase tracking-[0.4em]">
-              Powered by <span className="text-white/20">Digimedios</span>
+            <p className="text-[9px] font-black text-white/10 uppercase tracking-[0.4em]">
+              POWERED BY <span className="text-white/30">DIGIMEDIOS APPS</span>
             </p>
           </div>
         </footer>
