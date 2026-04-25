@@ -152,12 +152,18 @@ export const AdminDashboard = () => {
 
         if (files && files.length > 0) {
           const pathsToDelete = files.map(f => `${selectedEventId}/${f.name}`);
+          console.log(`Intentando borrar en ${bucket}:`, pathsToDelete);
+          
           const { error: delError } = await supabase.storage.from(bucket).remove(pathsToDelete);
           
           if (delError) {
-            alert(`Error al borrar archivos físicos (${bucket}): ` + delError.message);
+            alert(`Error al borrar en ${bucket}: ${delError.message}\nIntentado borrar: ${pathsToDelete.join(', ')}`);
             console.error(`Error eliminando en bucket ${bucket}:`, delError);
+          } else {
+            console.log(`Borrado exitoso en ${bucket}`);
           }
+        } else {
+          console.log(`No se encontraron archivos en el bucket ${bucket} para este evento.`);
         }
       }
 
