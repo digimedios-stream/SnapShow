@@ -487,9 +487,18 @@ export const GuestUpload = () => {
         )}
       </main>
 
-      <footer className="p-10 text-center space-y-1">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/10">© SnapShow 2026</p>
-        <p className="text-[10px] font-bold text-white/5 uppercase tracking-widest">Desarrollado por Digimedios Apps</p>
+      <footer className="mt-auto py-10 px-6 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-sm -z-10" />
+        <div className="max-w-xs mx-auto space-y-1 relative">
+          <div className="h-[1px] w-12 bg-white/10 mx-auto mb-6" />
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 drop-shadow-sm">
+            © SnapShow <span className={`text-${themeColor}-500/60`}>2026</span>
+          </p>
+          <p className="text-[9px] font-bold text-white/20 uppercase tracking-[0.4em] pt-1">
+            Diseño por <span className="text-white/40">Digimedios</span>
+          </p>
+          <div className={`absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-${themeColor}-500/5 rounded-full blur-3xl`} />
+        </div>
       </footer>
     </div>
   );

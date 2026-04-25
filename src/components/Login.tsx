@@ -82,9 +82,16 @@ export const Login = () => {
           </button>
         </form>
 
-        <footer className="mt-10 text-center space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/10">© SnapShow 2026</p>
-          <p className="text-[10px] font-bold text-indigo-500/20 uppercase tracking-widest">Desarrollado por Digimedios Apps</p>
+        <footer className="mt-12 text-center relative">
+          <div className="h-[1px] w-8 bg-white/5 mx-auto mb-6" />
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
+              © SnapShow <span className="text-indigo-500/40">2026</span>
+            </p>
+            <p className="text-[9px] font-bold text-white/5 uppercase tracking-[0.4em]">
+              Powered by <span className="text-white/20">Digimedios</span>
+            </p>
+          </div>
         </footer>
       </div>
     </div>
