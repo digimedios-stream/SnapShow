@@ -140,34 +140,13 @@ export const AdminDashboard = () => {
     try {
       setIsDownloading(true); // Usamos este estado para bloquear la UI
 
-      // 1. Obtener todos los items para borrar de storage
-      const { data: items } = await supabase
-        .from('content_items')
-        .select('type, content_url')
-        .eq('event_id', selectedEventId);
-
-      if (items && items.length > 0) {
-        const getCleanPath = (url: string) => {
-          if (!url) return null;
-          const filename = url.split('/').pop()?.split('?')[0];
-          return filename ? `${selectedEventId}/${filename}` : null;
-        };
-
-        const imagePaths = items
-          .filter(it => it.type === 'image' && it.content_url)
-          .map(it => getCleanPath(it.content_url))
-          .filter(Boolean) as string[];
-        
-        const videoPaths = items
-          .filter(it => it.type === 'video' && it.content_url)
-          .map(it => getCleanPath(it.content_url))
-          .filter(Boolean) as string[];
-
-        if (imagePaths.length > 0) {
-          await supabase.storage.from('images').remove(imagePaths);
-        }
-        if (videoPaths.length > 0) {
-          await supabase.storage.from('videos').remove(videoPaths);
+      // 1. Limpiar Storage (Buckets: images y videos)
+      const buckets = ['images', 'videos'];
+      for (const bucket of buckets) {
+        const { data: files } = await supabase.storage.from(bucket).list(selectedEventId!);
+        if (files && files.length > 0) {
+          const pathsToDelete = files.map(f => `${selectedEventId}/${f.name}`);
+          await supabase.storage.from(bucket).remove(pathsToDelete);
         }
       }
 
