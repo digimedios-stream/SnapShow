@@ -129,21 +129,6 @@ export const AdminDashboard = () => {
     alert('✅ Ciclo reiniciado. Todo el contenido volverá a mostrarse.');
   };
 
-  const handleClearEvent = async () => {
-    if (!confirm('¿Limpiar pantalla? Las fotos actuales dejarán de aparecer para dar lugar a las nuevas, pero NO se borrarán de la base de datos.')) return;
-    
-    // Obtenemos el límite de visualizaciones para "saltarlo"
-    const { data: settings } = await supabase.from('event_settings').select('max_displays').eq('event_id', selectedEventId).maybeSingle();
-    const limit = settings?.max_displays || 3;
-    
-    await supabase.from('content_items')
-      .update({ display_count: limit })
-      .eq('event_id', selectedEventId)
-      .eq('is_approved', true);
-
-    if (selectedEventId) fetchContent(selectedEventId);
-    alert('✅ Pantalla limpia. El contenido actual ha sido marcado como finalizado.');
-  };
 
   const handleDeleteAllMedia = async () => {
     const confirm1 = confirm('⚠️ ¡ATENCIÓN! Estás a punto de eliminar PERMANENTEMENTE todas las fotos, videos y mensajes de este evento.');
@@ -490,7 +475,6 @@ export const AdminDashboard = () => {
                   {isGeneratingFlyer ? <Loader2 className="animate-spin" /> : <Printer size={16} />} Flyer QR
                 </button>
                 <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 font-bold text-sm hover:bg-white/5 transition-all" title="Reiniciar ciclo de visualización"><RefreshCw size={16} /> Reiniciar</button>
-                <button onClick={handleClearEvent} className="flex items-center gap-2 glass px-4 py-2 text-indigo-300 font-bold text-sm hover:bg-white/5 transition-all" title="Finalizar contenido actual sin borrarlo"><RefreshCw size={16} /> Limpiar</button>
                 <button onClick={handleDownloadAll} disabled={isDownloading} className="flex items-center gap-2 glass px-4 py-2 text-green-400 font-bold text-sm hover:bg-white/5 transition-all">
                   {isDownloading ? <Loader2 className="animate-spin" /> : <Download size={16} />} ZIP
                 </button>
