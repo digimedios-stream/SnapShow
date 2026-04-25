@@ -442,8 +442,8 @@ export const AdminDashboard = () => {
               </p>
               <span className="h-[1px] w-6 bg-white/10" />
             </div>
-            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.25em] mt-4">
-              POWERED BY <span className="text-indigo-500/30">DIGIMEDIOS APPS</span>
+            <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] mt-4">
+              POWERED BY <span className="text-indigo-400">DIGIMEDIOS APPS</span>
             </p>
           </div>
         </footer>
