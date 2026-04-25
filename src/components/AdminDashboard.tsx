@@ -66,7 +66,7 @@ export const AdminDashboard = () => {
 
     if (userRole === 'superadmin') {
       setIsAdmin(true);
-      const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+      const { data } = await supabase.from('events').select('*, event_settings(*)').order('created_at', { ascending: false });
       if (data && data.length > 0) {
         setEvents(data);
         const targetId = selectedEventId || data[0]?.id;
@@ -81,7 +81,7 @@ export const AdminDashboard = () => {
       setIsAdmin(false);
       const { data } = await supabase
         .from('events')
-        .select('*')
+        .select('*, event_settings(*)')
         .eq('client_id', user.id)
         .order('created_at', { ascending: false });
       
@@ -107,7 +107,7 @@ export const AdminDashboard = () => {
       .eq('id', user.id)
       .single();
 
-    let query = supabase.from('events').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('events').select('*, event_settings(*)').order('created_at', { ascending: false });
     if (profile?.role !== 'superadmin') {
       query = query.eq('client_id', user.id);
     }
@@ -130,8 +130,8 @@ export const AdminDashboard = () => {
     if (!confirm('¿Limpiar pantalla? Las fotos actuales dejarán de aparecer para dar lugar a las nuevas, pero NO se borrarán de la base de datos.')) return;
     
     // Obtenemos el límite de visualizaciones para "saltarlo"
-    const { data: settings } = await supabase.from('event_settings').select('max_displays').eq('event_id', selectedEventId).single();
-    const limit = settings?.max_displays || 3;
+    const settings = currentEvent?.event_settings;
+    const limit = (Array.isArray(settings) ? settings[0]?.max_displays : settings?.max_displays) || 3;
     
     await supabase.from('content_items')
       .update({ display_count: limit })
@@ -519,8 +519,21 @@ export const AdminDashboard = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-6 font-mono tracking-tighter">Contenido del Evento ({contentItems.length})</h3>
-              {contentItems.map((item) => (
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 font-mono tracking-tighter">
+                  Contenido del Evento ({contentItems.filter(it => (it.display_count || 0) < ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3)).length})
+                </h3>
+                <button 
+                  onClick={() => setShowFinished(!showFinished)}
+                  className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${showFinished ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400' : 'border-white/10 text-white/20 hover:text-white/40'}`}
+                >
+                  {showFinished ? '● Ocultar Finalizados' : '○ Ver Finalizados'}
+                </button>
+              </div>
+              
+              {contentItems
+                .filter(item => showFinished || (item.display_count || 0) < ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3))
+                .map((item) => (
                 <div key={item.id} className="glass group p-4 flex items-center gap-4 hover:border-white/20 transition-all border border-white/5 rounded-3xl">
                   <div onClick={() => setPreviewItem(item)} className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center overflow-hidden border border-white/10 cursor-zoom-in relative group/thumb">
                     {item.type === 'image' && <img src={item.content_url} className="w-full h-full object-cover opacity-80 group-hover/thumb:opacity-100" />}
@@ -531,8 +544,10 @@ export const AdminDashboard = () => {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold truncate text-lg">{item.type === 'message' ? item.text_content : item.type === 'image' ? '📸 FOTO DE INVITADO' : '🎥 VÍDEO DE INVITADO'}</p>
                     <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest mt-1">
-                      <span className="text-white/40">Vistas: <span className={item.display_count >= 3 ? 'text-indigo-400' : 'text-green-500'}>{item.display_count || 0}</span> / 3</span>
-                      <span className={!item.is_approved ? 'text-amber-500' : item.display_count >= 3 ? 'text-white/20' : 'text-green-500'}>● {!item.is_approved ? 'Por aprobar' : item.display_count >= 3 ? 'Finalizado' : 'Activo'}</span>
+                      <span className="text-white/40">Vistas: <span className={(item.display_count || 0) >= ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3) ? 'text-indigo-400' : 'text-green-500'}>{item.display_count || 0}</span> / {(Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3}</span>
+                      <span className={!item.is_approved ? 'text-amber-500' : (item.display_count || 0) >= ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3) ? 'text-white/20' : 'text-green-500'}>
+                        ● {!item.is_approved ? 'Por aprobar' : (item.display_count || 0) >= ((Array.isArray(currentEvent?.event_settings) ? currentEvent?.event_settings[0]?.max_displays : currentEvent?.event_settings?.max_displays) || 3) ? 'Finalizado' : 'Activo'}
+                      </span>
                     </div>
                   </div>
                   <div className="flex gap-2">
