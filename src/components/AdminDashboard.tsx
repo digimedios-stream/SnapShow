@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, Eraser, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
@@ -123,7 +123,76 @@ export const AdminDashboard = () => {
     if (!confirm('¿Quieres reiniciar el contador de vistas? Todas las fotos volverán a aparecer en el carrusel.')) return;
     await supabase.from('content_items').update({ display_count: 0 }).eq('event_id', selectedEventId);
     if (selectedEventId) fetchContent(selectedEventId);
-    alert('✅ Ciclo reiniciado.');
+    alert('✅ Ciclo reiniciado. Todo el contenido volverá a mostrarse.');
+  };
+
+  const handleClearEvent = async () => {
+    if (!confirm('¿Limpiar pantalla? Las fotos actuales dejarán de aparecer para dar lugar a las nuevas, pero NO se borrarán de la base de datos.')) return;
+    
+    // Obtenemos el límite de visualizaciones para "saltarlo"
+    const { data: settings } = await supabase.from('event_settings').select('max_displays').eq('event_id', selectedEventId).single();
+    const limit = settings?.max_displays || 3;
+    
+    await supabase.from('content_items')
+      .update({ display_count: limit })
+      .eq('event_id', selectedEventId)
+      .eq('is_approved', true);
+
+    if (selectedEventId) fetchContent(selectedEventId);
+    alert('✅ Pantalla limpia. El contenido actual ha sido marcado como finalizado.');
+  };
+
+  const handleDeleteAllMedia = async () => {
+    const confirm1 = confirm('⚠️ ¡ATENCIÓN! Estás a punto de eliminar PERMANENTEMENTE todas las fotos, videos y mensajes de este evento.');
+    if (!confirm1) return;
+    
+    const confirm2 = confirm('🛑 Esta acción NO se puede deshacer. ¿Ya descargaste los archivos en tu PC? Te recomendamos usar el botón ZIP antes de borrar.\n\n¿BORRAR TODO DE TODAS FORMAS?');
+    if (!confirm2) return;
+
+    try {
+      setIsDownloading(true); // Usamos este estado para bloquear la UI
+
+      // 1. Obtener todos los items para borrar de storage
+      const { data: items } = await supabase
+        .from('content_items')
+        .select('type, content_url')
+        .eq('event_id', selectedEventId);
+
+      if (items && items.length > 0) {
+        const imagePaths = items
+          .filter(it => it.type === 'image' && it.content_url)
+          .map(it => it.content_url.split('/').pop());
+        
+        const videoPaths = items
+          .filter(it => it.type === 'video' && it.content_url)
+          .map(it => it.content_url.split('/').pop());
+
+        // Borrar de storage en carpetas del evento
+        if (imagePaths.length > 0) {
+          const fullImagePaths = imagePaths.map(p => `${selectedEventId}/${p}`);
+          await supabase.storage.from('images').remove(fullImagePaths);
+        }
+        if (videoPaths.length > 0) {
+          const fullVideoPaths = videoPaths.map(p => `${selectedEventId}/${p}`);
+          await supabase.storage.from('videos').remove(fullVideoPaths);
+        }
+      }
+
+      // 2. Borrar de la base de datos
+      const { error } = await supabase
+        .from('content_items')
+        .delete()
+        .eq('event_id', selectedEventId);
+
+      if (error) throw error;
+
+      alert('✅ Todo el contenido ha sido eliminado permanentemente.');
+      if (selectedEventId) fetchContent(selectedEventId);
+    } catch (err: any) {
+      alert('Error al eliminar: ' + err.message);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const fetchContent = async (id: string) => {
@@ -415,9 +484,13 @@ export const AdminDashboard = () => {
                 <button onClick={handleDownloadFlyer} disabled={isGeneratingFlyer} className="flex items-center gap-2 glass px-4 py-2 text-amber-500 font-bold text-sm hover:bg-white/5 transition-all">
                   {isGeneratingFlyer ? <Loader2 className="animate-spin" /> : <Printer size={16} />} Flyer QR
                 </button>
-                <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 font-bold text-sm"><RefreshCw size={16} /> Reiniciar</button>
-                <button onClick={handleDownloadAll} disabled={isDownloading} className="flex items-center gap-2 glass px-4 py-2 text-green-400 font-bold text-sm">
+                <button onClick={handleResetCycle} className="flex items-center gap-2 glass px-4 py-2 text-white/60 font-bold text-sm hover:bg-white/5 transition-all" title="Reiniciar ciclo de visualización"><RefreshCw size={16} /> Reiniciar</button>
+                <button onClick={handleClearEvent} className="flex items-center gap-2 glass px-4 py-2 text-indigo-300 font-bold text-sm hover:bg-white/5 transition-all" title="Finalizar contenido actual sin borrarlo"><Eraser size={16} /> Limpiar</button>
+                <button onClick={handleDownloadAll} disabled={isDownloading} className="flex items-center gap-2 glass px-4 py-2 text-green-400 font-bold text-sm hover:bg-white/5 transition-all">
                   {isDownloading ? <Loader2 className="animate-spin" /> : <Download size={16} />} ZIP
+                </button>
+                <button onClick={handleDeleteAllMedia} disabled={isDownloading} className="flex items-center gap-2 glass px-4 py-2 text-red-400 font-bold text-sm hover:bg-red-500/10 transition-all border-red-500/20" title="Borrar todo permanentemente">
+                  <Trash2 size={16} /> Borrar Todo
                 </button>
                 <button 
                   onClick={() => setIsMonitorVisible(!isMonitorVisible)} 
