@@ -55,12 +55,12 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
       case 'gold':
         return (
           <div className="absolute inset-0 bg-[#1a0f00]">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(30)].map((_, i) => (
               <motion.div
                 key={i}
-                initial={{ y: '110%', x: `${Math.random() * 100}%`, opacity: 0 }}
-                animate={{ y: '-10%', opacity: [0, 1, 0] }}
-                transition={{ duration: 5 + Math.random() * 5, repeat: Infinity, delay: Math.random() * 5 }}
+                initial={{ y: '110vh', x: `${Math.random() * 100}vw`, opacity: 0 }}
+                animate={{ y: '-10vh', opacity: [0, 1, 0] }}
+                transition={{ duration: 10 + Math.random() * 10, repeat: Infinity, delay: Math.random() * 10 }}
                  className="absolute w-2 h-2 bg-amber-400 rounded-full blur-[1px] shadow-[0_0_15px_#fbbf24]"
               />
             ))}
