@@ -97,18 +97,20 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
 
       case 'bokeh':
         return (
-          <div className="absolute inset-0 bg-slate-950">
-            {[...Array(12)].map((_, i) => (
+          <div className="absolute inset-0 bg-slate-950 overflow-hidden">
+            {[...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
+                initial={{ opacity: 0, rotate: 0 }}
                 animate={{ 
-                  y: [Math.random() * 100 + '%', Math.random() * 100 + '%'],
-                  x: [Math.random() * 100 + '%', Math.random() * 100 + '%'],
-                  scale: [1, 1.2, 1]
+                  y: [Math.random() * 100 + 'vh', Math.random() * 100 + 'vh'],
+                  x: [Math.random() * 100 + 'vw', Math.random() * 100 + 'vw'],
+                  rotate: [0, 180, 360],
+                  opacity: [0, 0.15, 0]
                 }}
-                transition={{ duration: 20 + Math.random() * 10, repeat: Infinity, ease: "easeInOut" }}
-                style={{ translateZ: 0, willChange: 'transform' }}
-                className="absolute w-64 h-64 rounded-full bg-white/20 blur-[40px]"
+                transition={{ duration: 20 + Math.random() * 20, repeat: Infinity, ease: "linear" }}
+                style={{ willChange: 'transform, opacity' }}
+                className="absolute w-24 h-24 md:w-48 md:h-48 border border-white/10 rounded-2xl"
               />
             ))}
           </div>

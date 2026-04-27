@@ -164,7 +164,7 @@ export const SettingsPanel = ({ eventId, onClose }: SettingsPanelProps) => {
               { id: 'aurora', label: 'Aurora', color: 'from-blue-600 to-purple-600' },
               { id: 'lights', label: 'Neón', color: 'bg-blue-500/20 border-blue-500/50' },
               { id: 'gold', label: 'Festivo', color: 'from-amber-600 to-yellow-400' },
-              { id: 'bokeh', label: 'Burbujas', color: 'bg-slate-700' },
+              { id: 'bokeh', label: 'Moderno', color: 'bg-slate-700' },
               { id: 'stars', label: 'Estrellas', color: 'bg-[#020617]' },
               { id: 'mesh', label: 'Mesh', color: 'from-indigo-600 via-purple-600 to-pink-600' },
               { id: 'none', label: 'Limpio', color: 'bg-zinc-800' },
