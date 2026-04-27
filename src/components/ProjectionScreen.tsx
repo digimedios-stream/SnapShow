@@ -52,8 +52,8 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
     fetchData();
 
     // suscripciones en tiempo real
-    const itemsChannel = supabase.channel('content_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'content_items', filter: `event_id=eq.${eventId}` }, () => fetchData()).subscribe();
-    const settingsChannel = supabase.channel('settings_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings', filter: `event_id=eq.${eventId}` }, () => fetchData()).subscribe();
+    const itemsChannel = supabase.channel(`content_changes_${eventId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'content_items', filter: `event_id=eq.${eventId}` }, () => fetchData()).subscribe();
+    const settingsChannel = supabase.channel(`settings_changes_${eventId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'event_settings', filter: `event_id=eq.${eventId}` }, () => fetchData()).subscribe();
 
     // LIVE EMOJIS: Escuchar transmisiones de reacciones
     const emojiChannel = supabase.channel(`reactions_${eventId}`)
@@ -67,7 +67,15 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
       })
       .subscribe();
 
-    const syncChannel = supabase.channel(`sync_${eventId}`).subscribe();
+    const syncChannel = supabase.channel(`sync_${eventId}`).subscribe((status) => {
+      if (status === 'SUBSCRIBED' && activeId) {
+        syncChannel.send({
+          type: 'broadcast',
+          event: 'sync',
+          payload: { itemId: activeId }
+        });
+      }
+    });
 
     return () => {
       supabase.removeChannel(itemsChannel);
@@ -83,12 +91,15 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
       const foundIndex = items.findIndex(it => it.id === activeId);
       if (foundIndex !== -1) {
         setCurrentIndex(foundIndex);
-        // EMITIR ESTADO AL MONITOR:
-        supabase.channel(`sync_${eventId}`).send({
-          type: 'broadcast',
-          event: 'sync',
-          payload: { itemId: activeId }
-        });
+        // EMITIR ESTADO AL MONITOR (Solo si ya tenemos el activeId y items)
+        const channel = supabase.channel(`sync_${eventId}`);
+        if (channel.state === 'joined') {
+          channel.send({
+            type: 'broadcast',
+            event: 'sync',
+            payload: { itemId: activeId }
+          });
+        }
       } else {
         // Si el elemento activo desapareció (llegó al límite), mantenemos el mismo índice 
         // para mostrar el que ocupó su lugar, o reseteamos a 0 si estamos al final.
@@ -99,7 +110,7 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
         setActiveId(items[currentIndex]?.id || items[0]?.id || null);
       }
     }
-  }, [items, activeId]);
+  }, [items, activeId, eventId]);
 
   useEffect(() => {
     // Si no hay items, no hay nada que temporizar
