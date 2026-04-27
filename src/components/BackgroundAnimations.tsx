@@ -41,16 +41,14 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
         return (
           <div className="absolute inset-0 bg-black">
              <div className="absolute inset-0 opacity-30 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />
-             <motion.div 
-               animate={{ x: ['-100%', '100%'] }}
-               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-               className="absolute top-0 w-1/2 h-full bg-gradient-to-r from-transparent via-blue-500/20 to-transparent skew-x-12"
-             />
-             <motion.div 
-               animate={{ x: ['100%', '-100%'] }}
-               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-               className="absolute bottom-0 w-1/2 h-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent -skew-x-12"
-             />
+             <motion.div                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                className="absolute top-0 w-1/2 h-full bg-gradient-to-r from-transparent via-blue-500/40 to-transparent skew-x-12"
+              />
+             <motion.div                animate={{ x: ['100%', '-100%'] }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute bottom-0 w-1/2 h-full bg-gradient-to-r from-transparent via-purple-500/40 to-transparent -skew-x-12"
+              />
           </div>
         );
 
@@ -63,7 +61,7 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
                 initial={{ y: '110%', x: `${Math.random() * 100}%`, opacity: 0 }}
                 animate={{ y: '-10%', opacity: [0, 1, 0] }}
                 transition={{ duration: 5 + Math.random() * 5, repeat: Infinity, delay: Math.random() * 5 }}
-                className="absolute w-1 h-1 bg-amber-400 rounded-full blur-[1px] shadow-[0_0_10px_#fbbf24]"
+                 className="absolute w-2 h-2 bg-amber-400 rounded-full blur-[1px] shadow-[0_0_15px_#fbbf24]"
               />
             ))}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] opacity-60" />
@@ -90,9 +88,9 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
         return (
           <div className="absolute inset-0 bg-zinc-950 overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-40">
-              <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/30 blur-[120px] animate-pulse" />
-              <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/30 blur-[120px] animate-pulse" />
-              <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px]" />
+              <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/50 blur-[120px] animate-pulse" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/50 blur-[120px] animate-pulse" />
+              <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-indigo-600/40 blur-[120px]" />
             </div>
           </div>
         );
@@ -110,7 +108,7 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
                 }}
                 transition={{ duration: 20 + Math.random() * 10, repeat: Infinity, ease: "easeInOut" }}
                 style={{ translateZ: 0, willChange: 'transform' }}
-                className="absolute w-64 h-64 rounded-full bg-white/5 blur-[40px]"
+                className="absolute w-64 h-64 rounded-full bg-white/20 blur-[40px]"
               />
             ))}
           </div>
