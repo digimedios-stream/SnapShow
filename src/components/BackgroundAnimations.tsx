@@ -106,11 +106,11 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
                   y: [Math.random() * 100 + 'vh', Math.random() * 100 + 'vh'],
                   x: [Math.random() * 100 + 'vw', Math.random() * 100 + 'vw'],
                   rotate: [0, 180, 360],
-                  opacity: [0, 0.15, 0]
+                  opacity: [0, 0.3, 0]
                 }}
                 transition={{ duration: 20 + Math.random() * 20, repeat: Infinity, ease: "linear" }}
                 style={{ willChange: 'transform, opacity' }}
-                className="absolute w-24 h-24 md:w-48 md:h-48 border border-white/10 rounded-2xl"
+                className="absolute w-32 h-32 md:w-64 md:h-64 border-2 border-white/20 rounded-3xl bg-white/[0.02]"
               />
             ))}
           </div>
