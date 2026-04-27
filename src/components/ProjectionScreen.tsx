@@ -193,7 +193,7 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
 
       <div className="absolute bottom-12 right-12 z-20">
         {settings?.show_qr && (
-          <div className="glass p-4 rounded-3xl flex flex-col items-center gap-2 border border-white/20 shadow-2xl backdrop-blur-md">
+          <div className="bg-black/60 p-4 rounded-3xl flex flex-col items-center gap-2 border border-white/10 shadow-2xl">
              <img 
                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${window.location.origin}/guest?id=${eventId}`)}`} 
                alt="QR" 
@@ -234,10 +234,10 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
         ) : (
           <motion.div
             key={`${items[currentIndex]?.id}-${currentIndex}`}
-            initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            exit={{ opacity: 0, scale: 1.1, rotateY: 10 }}
-            transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
             className="absolute inset-0 flex items-center justify-center p-24 z-10"
           >
             {items[currentIndex]?.type === 'message' && (
@@ -247,9 +247,9 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
                   <MessageCircle className="text-black w-12 h-12" strokeWidth={2.5} />
                 </div>
                 
-                {/* Contenedor del mensaje con fondo oscuro semi-transparente (glassmorphism) */}
-                <div className="bg-black/50 backdrop-blur-xl p-12 pt-20 rounded-[60px] border border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
-                  <h1 className="text-5xl md:text-7xl font-bold leading-tight text-center tracking-tight drop-shadow-sm">
+                {/* Contenedor del mensaje con fondo oscuro semi-transparente */}
+                <div className="bg-black/70 p-12 pt-20 rounded-[60px] border border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
+                  <h1 className="text-5xl md:text-7xl font-bold leading-tight text-center tracking-tight drop-shadow-lg">
                     {items[currentIndex].text_content}
                   </h1>
                 </div>
@@ -258,7 +258,7 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
 
             {items[currentIndex]?.type === 'image' && (
               <div className="relative group">
-                 <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full scale-110 -z-10" />
+                 <div className="absolute inset-0 bg-white/5 blur-2xl rounded-full scale-110 -z-10" />
                  <img 
                    src={items[currentIndex].content_url} 
                    className="max-h-[85vh] max-w-full object-contain rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border-4 border-white/10" 

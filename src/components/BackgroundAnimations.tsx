@@ -16,21 +16,23 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
           <div className="absolute inset-0 bg-[#020617] overflow-hidden">
             <motion.div 
               animate={{ 
-                scale: [1, 1.2, 1],
+                scale: [1, 1.1, 1],
                 rotate: [0, 90, 0],
-                opacity: [0.3, 0.5, 0.3]
+                opacity: [0.3, 0.4, 0.3]
               }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_#4f46e5_0%,_transparent_50%)] blur-[120px]"
+              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+              style={{ willChange: 'transform, opacity' }}
+              className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_#4f46e5_0%,_transparent_50%)] blur-[60px]"
             />
             <motion.div 
               animate={{ 
-                scale: [1.2, 1, 1.2],
+                scale: [1.1, 1, 1.1],
                 rotate: [0, -90, 0],
-                opacity: [0.2, 0.4, 0.2]
+                opacity: [0.2, 0.3, 0.2]
               }}
-              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              className="absolute -bottom-[50%] -right-[50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_#9333ea_0%,_transparent_50%)] blur-[120px]"
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              style={{ willChange: 'transform, opacity' }}
+              className="absolute -bottom-[50%] -right-[50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_#9333ea_0%,_transparent_50%)] blur-[60px]"
             />
           </div>
         );
@@ -104,10 +106,11 @@ export const BackgroundAnimations = ({ theme = 'aurora' }: BackgroundAnimationsP
                 animate={{ 
                   y: [Math.random() * 100 + '%', Math.random() * 100 + '%'],
                   x: [Math.random() * 100 + '%', Math.random() * 100 + '%'],
-                  scale: [1, 1.5, 1]
+                  scale: [1, 1.2, 1]
                 }}
-                transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute w-64 h-64 rounded-full bg-white/5 blur-[60px]"
+                transition={{ duration: 20 + Math.random() * 10, repeat: Infinity, ease: "easeInOut" }}
+                style={{ translateZ: 0, willChange: 'transform' }}
+                className="absolute w-64 h-64 rounded-full bg-white/5 blur-[40px]"
               />
             ))}
           </div>
@@ -166,7 +169,7 @@ const VideoBackground = ({ index }: { index: number }) => {
       </AnimatePresence>
       
       {/* Overlay oscuro para mejorar contraste del QR */}
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 bg-black/40" />
     </div>
   );
 };
