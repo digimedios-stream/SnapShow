@@ -140,10 +140,25 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
     } 
   };
 
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   const currentItem = items[currentIndex] || { type: 'message', text_content: 'SnapShow • Esperando contenido...' };
 
   return (
-    <div className="h-screen w-screen text-white overflow-hidden relative">
+    <div 
+      className="h-screen w-screen text-white overflow-hidden relative cursor-none"
+      onDoubleClick={toggleFullScreen}
+    >
       <BackgroundAnimations 
         theme={(settings?.background_animation) || 'aurora'} 
       />
