@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle, ShieldCheck, ShieldOff, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
@@ -25,6 +25,9 @@ export const AdminDashboard = () => {
   const [isMonitorVisible, setIsMonitorVisible] = useState(false);
   const [showFinished, setShowFinished] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [autoApprove, setAutoApprove] = useState(false);
+  const [showAutoApproveWarning, setShowAutoApproveWarning] = useState(false);
+  const [togglingAutoApprove, setTogglingAutoApprove] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -34,6 +37,7 @@ export const AdminDashboard = () => {
     if (!selectedEventId) return;
     
     fetchContent(selectedEventId);
+    fetchAutoApprove(selectedEventId);
 
     // Suscribirse a cambios en tiempo real
     const channel = supabase
@@ -52,6 +56,51 @@ export const AdminDashboard = () => {
       supabase.removeChannel(channel);
     };
   }, [selectedEventId]);
+
+  const fetchAutoApprove = async (eventId: string) => {
+    const { data } = await supabase
+      .from('event_settings')
+      .select('auto_approve')
+      .eq('event_id', eventId)
+      .maybeSingle();
+    setAutoApprove(data?.auto_approve === true);
+  };
+
+  const handleToggleAutoApprove = async (enable: boolean) => {
+    if (enable) {
+      setShowAutoApproveWarning(true);
+      return;
+    }
+    // Desactivar es seguro, no necesita advertencia
+    setTogglingAutoApprove(true);
+    await supabase
+      .from('event_settings')
+      .update({ auto_approve: false })
+      .eq('event_id', selectedEventId);
+    setAutoApprove(false);
+    setTogglingAutoApprove(false);
+  };
+
+  const confirmAutoApprove = async () => {
+    setTogglingAutoApprove(true);
+    // 1. Activar auto_approve en settings
+    await supabase
+      .from('event_settings')
+      .update({ auto_approve: true })
+      .eq('event_id', selectedEventId);
+    
+    // 2. Aprobar automáticamente todos los pendientes (incluye null y false)
+    await supabase
+      .from('content_items')
+      .update({ is_approved: true })
+      .eq('event_id', selectedEventId)
+      .or('is_approved.eq.false,is_approved.is.null');
+    
+    setAutoApprove(true);
+    setShowAutoApproveWarning(false);
+    setTogglingAutoApprove(false);
+    if (selectedEventId) fetchContent(selectedEventId);
+  };
 
   const fetchInitialData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -495,6 +544,53 @@ export const AdminDashboard = () => {
               </div>
             </header>
 
+            {/* Auto-Approve Toggle Card */}
+            <div 
+              className={`mb-8 p-4 rounded-2xl border transition-all duration-500 flex items-center justify-between gap-4 ${
+                autoApprove 
+                  ? 'bg-amber-500/10 border-amber-500/30 shadow-lg shadow-amber-500/5' 
+                  : 'bg-white/[0.02] border-white/10'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl transition-all duration-500 ${
+                  autoApprove 
+                    ? 'bg-amber-500/20 text-amber-400' 
+                    : 'bg-white/5 text-white/30'
+                }`}>
+                  {autoApprove ? <Zap size={22} /> : <ShieldCheck size={22} />}
+                </div>
+                <div>
+                  <p className={`text-sm font-bold tracking-tight transition-colors duration-300 ${autoApprove ? 'text-amber-300' : 'text-white/60'}`}>
+                    {autoApprove ? '⚡ AUTO-APROBACIÓN ACTIVA' : '🛡️ REVISIÓN DE CONTENIDO'}
+                  </p>
+                  <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-0.5">
+                    {autoApprove ? 'El contenido se publica sin revisión previa' : 'Todo el contenido requiere aprobación manual'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleToggleAutoApprove(!autoApprove)}
+                disabled={togglingAutoApprove}
+                className={`relative w-14 h-7 rounded-full transition-all duration-500 flex-shrink-0 ${
+                  autoApprove 
+                    ? 'bg-amber-500 shadow-lg shadow-amber-500/40' 
+                    : 'bg-white/10'
+                } ${togglingAutoApprove ? 'opacity-50' : 'cursor-pointer'}`}
+              >
+                <motion.div
+                  layout
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  className={`absolute top-0.5 w-6 h-6 rounded-full shadow-md ${
+                    autoApprove 
+                      ? 'left-[30px] bg-white' 
+                      : 'left-0.5 bg-white/60'
+                  }`}
+                />
+              </button>
+            </div>
+
             <div className="flex gap-4 mb-12">
                <label className={`flex-1 py-4 bg-amber-500 text-black rounded-2xl font-black flex items-center justify-center gap-3 cursor-pointer hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/10 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
                  {isUploading ? <Loader2 className="animate-spin" size={20} /> : <ImageIcon size={20} />} 
@@ -585,6 +681,83 @@ export const AdminDashboard = () => {
       <AnimatePresence>
         {isMonitorVisible && selectedEventId && (
           <LiveMonitor eventId={selectedEventId} onClose={() => setIsMonitorVisible(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Auto-Approve Warning Modal */}
+      <AnimatePresence>
+        {showAutoApproveWarning && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setShowAutoApproveWarning(false)} 
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl" 
+            />
+            <motion.div 
+              initial={{ scale: 0.85, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.85, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className="relative w-full max-w-md bg-[#141414] rounded-[32px] overflow-hidden border border-white/10 shadow-2xl"
+            >
+              {/* Header glow */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500" />
+              
+              <div className="p-8 text-center">
+                {/* Warning Icon */}
+                <div className="relative mx-auto w-20 h-20 mb-6">
+                  <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-20 h-20 bg-amber-500/10 border-2 border-amber-500/40 rounded-full flex items-center justify-center">
+                    <AlertTriangle className="text-amber-400" size={36} />
+                  </div>
+                </div>
+
+                <h3 className="text-2xl font-black tracking-tight mb-2">
+                  ¿Desactivar la revisión?
+                </h3>
+                <p className="text-white/40 text-sm leading-relaxed mb-2">
+                  Todo el contenido subido por los invitados
+                </p>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-4">
+                  <span className="text-amber-400 text-sm font-bold">📸 Fotos</span>
+                  <span className="text-white/20">•</span>
+                  <span className="text-amber-400 text-sm font-bold">🎥 Videos</span>
+                  <span className="text-white/20">•</span>
+                  <span className="text-amber-400 text-sm font-bold">✍️ Mensajes</span>
+                </div>
+                <p className="text-white/40 text-sm leading-relaxed">
+                  aparecerá <span className="text-amber-400 font-bold">DIRECTAMENTE</span> en la pantalla de proyección sin tu aprobación previa.
+                </p>
+
+                {contentItems.filter(i => !i.is_approved).length > 0 && (
+                  <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                    <p className="text-[11px] text-white/50">
+                      <span className="text-amber-400 font-bold">{contentItems.filter(i => !i.is_approved).length}</span> items pendientes serán aprobados automáticamente.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 pt-0 flex gap-3">
+                <button 
+                  onClick={() => setShowAutoApproveWarning(false)}
+                  className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-bold text-white/60 transition-all active:scale-95"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={confirmAutoApprove}
+                  disabled={togglingAutoApprove}
+                  className="flex-1 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 rounded-2xl font-black text-white transition-all active:scale-95 shadow-lg shadow-amber-600/30 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {togglingAutoApprove ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} />}
+                  Sí, desactivar
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

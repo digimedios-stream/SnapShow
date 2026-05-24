@@ -47,7 +47,8 @@ export const SettingsPanel = ({ eventId, onClose }: SettingsPanelProps) => {
         show_qr: settings.show_qr,
         show_logo: settings.show_logo,
         qr_url: settings.qr_url,
-        logo_url: settings.logo_url
+        logo_url: settings.logo_url,
+        auto_approve: settings.auto_approve
       }, { onConflict: 'event_id' });
     
     if (error) {

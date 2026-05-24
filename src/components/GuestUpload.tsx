@@ -64,6 +64,18 @@ export const GuestUpload = () => {
     fetchEvent();
   }, [eventId]);
 
+  // Función para obtener el auto_approve más reciente (vía join con events que pasa RLS)
+  const fetchAutoApproveStatus = async (): Promise<boolean> => {
+    if (!eventId) return false;
+    const { data } = await supabase
+      .from('events')
+      .select('settings:event_settings(auto_approve)')
+      .eq('id', eventId)
+      .single();
+    const s = Array.isArray(data?.settings) ? data?.settings[0] : data?.settings;
+    return s?.auto_approve === true;
+  };
+
   const settings = Array.isArray(eventData?.settings) ? eventData?.settings[0] : eventData?.settings;
   const themeColor = settings?.theme_id || 'indigo';
   const bgVariant = settings?.background_variant || 'aurora';
@@ -178,10 +190,14 @@ export const GuestUpload = () => {
 
       const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
+      // Consultar auto_approve fresco vía join con events (pasa RLS anónimo)
+      const shouldAutoApprove = await fetchAutoApproveStatus();
+
       const { error: dbError } = await supabase.from('content_items').insert({
         event_id: eventId,
         type: capturedMedia.type,
         content_url: publicUrl,
+        is_approved: shouldAutoApprove,
         sort_order: Date.now()
       });
 
@@ -213,10 +229,14 @@ export const GuestUpload = () => {
     if (!message.trim() || !eventId) return;
     setUploading(true);
     try {
+      // Consultar auto_approve fresco vía join con events (pasa RLS anónimo)
+      const shouldAutoApprove = await fetchAutoApproveStatus();
+
       await supabase.from('content_items').insert({
         event_id: eventId,
         type: 'message',
         text_content: message.trim(),
+        is_approved: shouldAutoApprove,
         sort_order: Date.now()
       });
       setSuccess(true);
