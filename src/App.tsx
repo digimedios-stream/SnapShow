@@ -5,6 +5,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { ProjectionScreen } from './components/ProjectionScreen';
 import { Login } from './components/Login';
 import { GuestUpload } from './components/GuestUpload';
+import { LandingPage } from './components/LandingPage';
 import { Session } from '@supabase/supabase-js';
 
 const ScreenWrapper = () => {
@@ -45,7 +46,7 @@ function App() {
         <Route path="/login" element={!session ? <Login /> : <Navigate to="/admin" replace />} />
         <Route path="/screen" element={<ScreenWrapper />} />
         <Route path="/guest" element={<GuestUpload />} />
-        <Route path="/" element={<Navigate to="/admin" replace />} />
+        <Route path="/" element={<LandingPage session={session} />} />
       </Routes>
     </BrowserRouter>
   );

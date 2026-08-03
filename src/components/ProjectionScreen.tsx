@@ -30,10 +30,14 @@ export const ProjectionScreen = ({ eventId }: ProjectionScreenProps) => {
 
       if (eventData) {
         setEventName(eventData.name);
-        setSettings(eventData.event_settings);
+        const settingsData = Array.isArray(eventData.event_settings)
+          ? eventData.event_settings[0]
+          : eventData.event_settings;
+        
+        setSettings(settingsData);
         
         // SMART CYCLE: Filtrar por aprobación y por límite de visualizaciones
-        const maxDisplays = eventData.event_settings?.max_displays || 999;
+        const maxDisplays = settingsData?.max_displays || 999;
         
         const validItems = (eventData.content_items || [])
           .filter((item: any) => 

@@ -458,9 +458,11 @@ export const AdminDashboard = () => {
       )}
 
       <aside className="w-80 border-r border-white/10 p-6 flex flex-col">
-        <div className="flex items-center gap-2 mb-8 px-2 text-indigo-400">
-          <Sparkles size={20} />
-          <h2 className="text-xl font-bold tracking-tight">SnapShow</h2>
+        <div className="flex items-center justify-center gap-0 mb-10 px-2">
+          {/* Logo (Símbolo) */}
+          <img src="/hero_phone.png" alt="Logo" style={{ height: '72px' }} className="w-auto object-contain drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]" />
+          {/* Logotipo (Texto) */}
+          <img src="/logo_text.png" alt="SnapShow" style={{ height: '72px', marginLeft: '-12px' }} className="w-auto object-contain" />
         </div>
         <nav className="flex-1 space-y-2 overflow-y-auto pr-2">
           {events.map((event) => (
