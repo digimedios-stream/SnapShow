@@ -34,9 +34,9 @@ export const Login = () => {
         <div className="text-center mb-10">
           <div className="flex flex-col items-center gap-0 mb-4">
             {/* Logo (Arriba) */}
-            <img src="/hero_phone.png" alt="Logo" style={{ height: '152px' }} className="w-auto object-contain drop-shadow-[0_0_25px_rgba(99,102,241,0.3)]" />
+            <img src="/hero_phone.png" alt="Logo" style={{ height: '98px' }} className="w-auto object-contain drop-shadow-[0_0_25px_rgba(99,102,241,0.3)] relative z-10" />
             {/* Logotipo (Abajo) */}
-            <img src="/logo_text.png" alt="SnapShow" style={{ height: '88px', marginTop: '-20px' }} className="w-auto object-contain" />
+            <img src="/logo_text.png" alt="SnapShow" style={{ height: '56px', marginTop: '-18px' }} className="w-auto object-contain" />
           </div>
           <p className="text-white/40 text-sm">SaaS de Proyección para Eventos</p>
         </div>

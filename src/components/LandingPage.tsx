@@ -236,9 +236,9 @@ export const LandingPage = ({ session }: LandingPageProps) => {
       {/* HEADER / NAVIGATION BAR */}
       <header className="sticky top-0 z-50 backdrop-blur-md border-b border-white/5 bg-[#070708]/60">
         <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src="/hero_phone.png" alt="Logo" className="h-14 md:h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(99,102,241,0.2)] hover:scale-105 transition-transform duration-300" />
-            <img src="/logo_text.png" alt="SnapShow" className="h-14 md:h-20 w-auto object-contain drop-shadow-[0_0_20px_rgba(99,102,241,0.3)]" />
+          <div className="flex items-center gap-0 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img src="/hero_phone.png" alt="Logo" className="h-14 md:h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(99,102,241,0.2)] hover:scale-105 transition-transform duration-300 relative z-10" />
+            <img src="/logo_text.png" alt="SnapShow" className="-ml-3 md:-ml-4 h-14 md:h-20 w-auto object-contain drop-shadow-[0_0_20px_rgba(99,102,241,0.3)]" />
           </div>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-white/60">
@@ -786,10 +786,10 @@ export const LandingPage = ({ session }: LandingPageProps) => {
       {/* FOOTER */}
       <footer className="py-12 border-t border-white/5 bg-[#050506]">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <img src="/hero_phone.png" alt="Logo" className="h-10 w-auto object-contain" />
-            <img src="/logo_text.png" alt="SnapShow" className="h-12 w-auto object-contain" />
-            <span className="text-[8px] block font-bold text-white/40 uppercase tracking-widest leading-none ml-2">© 2026</span>
+          <div className="flex items-center gap-0">
+            <img src="/hero_phone.png" alt="Logo" className="h-10 w-auto object-contain relative z-10" />
+            <img src="/logo_text.png" alt="SnapShow" className="-ml-2 h-12 w-auto object-contain" />
+            <span className="text-[8px] block font-bold text-white/40 uppercase tracking-widest leading-none ml-3">© 2026</span>
           </div>
 
           <div className="flex gap-8 text-xs font-semibold text-white/40">
