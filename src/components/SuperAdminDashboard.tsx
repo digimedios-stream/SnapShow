@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { LogOut, Users, Activity, Plus, ExternalLink, ShieldCheck, Database, Calendar, MessageCircle, UserX, UserCheck, Smartphone, Loader2, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -65,20 +66,48 @@ export const SuperAdminDashboard = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.rpc('admin_create_user', {
+      // Usamos un cliente secundario de Supabase sin persistencia para crear al usuario 
+      // de forma oficial por API, evitando cualquier error de esquema interno de la base de datos
+      const tempSupabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY,
+        {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
+        }
+      );
+
+      // 1. Crear el usuario en Auth Oficialmente
+      const { data: authData, error: authError } = await tempSupabase.auth.signUp({
         email: newEmail,
         password: newPassword,
-        full_name: newName,
-        phone: newPhone,
-        max_events: newMaxEvents
+        options: {
+          data: {
+            full_name: newName
+          }
+        }
       });
 
-      if (error) {
-        if (error.message.includes('function admin_create_user does not exist')) {
-            throw new Error("La función SQL no existe. ¿Ejecutaste el script supabase_migration.sql en tu dashboard de Supabase?");
-        }
-        throw error;
-      }
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("No se pudo crear la cuenta de usuario.");
+
+      const newUserId = authData.user.id;
+
+      // 2. Insertar su Perfil Público
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: newUserId,
+        role: 'client',
+        full_name: newName,
+        phone: newPhone,
+        max_events: newMaxEvents,
+        payment_status: 'pending',
+        is_active: true
+      });
+
+      if (profileError) throw profileError;
       
       alert('✅ Cliente creado con éxito. Ya puedes pasarle sus credenciales por WhatsApp.');
       setIsCreating(false);
