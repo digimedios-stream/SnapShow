@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle, ShieldCheck, ShieldOff, Zap } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle, ShieldCheck, ShieldOff, Zap, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
 import { LiveMonitor } from './LiveMonitor';
@@ -11,6 +12,7 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
 export const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [contentItems, setContentItems] = useState<any[]>([]);
@@ -116,35 +118,33 @@ export const AdminDashboard = () => {
 
     const userRole = profile?.role || 'client';
 
+    let targetClientId = user.id;
+
     if (userRole === 'superadmin') {
-      setIsAdmin(true);
-      const { data } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-      if (data && data.length > 0) {
-        setEvents(data);
-        const targetId = selectedEventId || data[0]?.id;
-        if (targetId) {
-          setSelectedEventId(targetId);
-          const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', targetId).maybeSingle();
-          setOnboardingFinished(settings?.onboarding_completed === true);
-        }
+      const impersonateId = localStorage.getItem('impersonate_client_id');
+      if (!impersonateId) {
+        navigate('/superadmin');
+        return;
       }
+      targetClientId = impersonateId;
+      setIsAdmin(true); // Is impersonating
     } else {
-      // Client role: Only see events where client_id = user.id
       setIsAdmin(false);
-      const { data } = await supabase
-        .from('events')
-        .select('*')
-        .eq('client_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (data) {
-        setEvents(data);
-        if (data.length > 0) {
-          const targetId = selectedEventId || data[0].id;
-          setSelectedEventId(targetId);
-          const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', targetId).maybeSingle();
-          setOnboardingFinished(settings?.onboarding_completed === true);
-        }
+    }
+
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('client_id', targetClientId)
+      .order('created_at', { ascending: false });
+    
+    if (data) {
+      setEvents(data);
+      if (data.length > 0) {
+        const targetId = selectedEventId || data[0].id;
+        setSelectedEventId(targetId);
+        const { data: settings } = await supabase.from('event_settings').select('onboarding_completed').eq('event_id', targetId).maybeSingle();
+        setOnboardingFinished(settings?.onboarding_completed === true);
       }
     }
   };
@@ -159,12 +159,14 @@ export const AdminDashboard = () => {
       .eq('id', user.id)
       .single();
 
-    let query = supabase.from('events').select('*').order('created_at', { ascending: false });
-    if (profile?.role !== 'superadmin') {
-      query = query.eq('client_id', user.id);
+    let targetClientId = user.id;
+    if (profile?.role === 'superadmin') {
+      const impersonateId = localStorage.getItem('impersonate_client_id');
+      if (impersonateId) targetClientId = impersonateId;
     }
 
-    const { data } = await query;
+    const { data } = await supabase.from('events').select('*').eq('client_id', targetClientId).order('created_at', { ascending: false });
+    
     if (data) setEvents(data);
     if (data && data.length > 0 && !selectedEventId) {
       setSelectedEventId(data[0].id);
@@ -478,7 +480,16 @@ export const AdminDashboard = () => {
           <button onClick={() => { const name = prompt('Nombre del nuevo evento:'); if (name) handleCreateEvent(name); }} className="w-full mt-4 border border-dashed border-white/10 p-4 rounded-xl text-white/20 hover:text-indigo-400 flex items-center justify-center gap-2 group italic text-xs capitalize transition-all active:scale-95"><Plus size={14} /> Nuevo Evento</button>
         </nav>
 
-        <button onClick={() => supabase.auth.signOut()} className="mt-6 flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400 border-t border-white/5 pt-6 font-bold text-xs uppercase tracking-widest"><LogOut size={16} /> Salir</button>
+        {isAdmin && localStorage.getItem('impersonate_client_id') && (
+          <button onClick={() => {
+            localStorage.removeItem('impersonate_client_id');
+            localStorage.removeItem('impersonate_client_name');
+            navigate('/superadmin');
+          }} className="mt-6 flex items-center gap-2 px-4 py-2 text-indigo-400 hover:text-indigo-300 border-t border-white/5 pt-6 font-bold text-xs uppercase tracking-widest">
+            <ArrowLeft size={16} /> Volver a SuperAdmin
+          </button>
+        )}
+        <button onClick={() => supabase.auth.signOut()} className={`${isAdmin && localStorage.getItem('impersonate_client_id') ? 'mt-2 border-none pt-0' : 'mt-6 border-t border-white/5 pt-6'} flex items-center gap-2 px-4 py-2 text-white/40 hover:text-red-400 font-bold text-xs uppercase tracking-widest`}><LogOut size={16} /> Salir</button>
         
         <footer className="mt-8 pt-8 pb-4 text-center px-6 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-r
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabaseClient';
 import { AdminDashboard } from './components/AdminDashboard';
+import { SuperAdminDashboard } from './components/SuperAdminDashboard';
 import { ProjectionScreen } from './components/ProjectionScreen';
 import { Login } from './components/Login';
 import { GuestUpload } from './components/GuestUpload';
@@ -42,6 +43,10 @@ function App() {
         <Route 
           path="/admin" 
           element={session ? <AdminDashboard /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/superadmin" 
+          element={session ? <SuperAdminDashboard /> : <Navigate to="/login" replace />} 
         />
         <Route path="/login" element={!session ? <Login /> : <Navigate to="/admin" replace />} />
         <Route path="/screen" element={<ScreenWrapper />} />
