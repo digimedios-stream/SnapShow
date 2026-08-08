@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Users, Activity, Plus, ExternalLink, ShieldCheck, Database, Calendar, MessageCircle, UserX, UserCheck, Smartphone, Loader2, Check } from 'lucide-react';
+import { LogOut, Users, Activity, Plus, ExternalLink, ShieldCheck, Database, Calendar, MessageCircle, UserX, UserCheck, Smartphone, Loader2, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -120,6 +120,50 @@ export const SuperAdminDashboard = () => {
     }
     
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const handleDeleteClient = async (clientId: string, clientName: string) => {
+    const confirm1 = confirm(`⚠️ ¿ESTÁS SEGURO?\n\nEstás a punto de eliminar al cliente "${clientName}".\n\nEsto borrará permanentemente su cuenta, todos sus eventos, configuraciones y TODO el contenido multimedia (fotos y videos) subido por sus invitados.`);
+    if (!confirm1) return;
+    
+    const confirm2 = confirm('🛑 ACCIÓN IRREVERSIBLE. ¿Estás absolutamente seguro de que deseas eliminar todo el rastro de este cliente?');
+    if (!confirm2) return;
+
+    setLoading(true);
+    try {
+      // 1. Buscar todos los eventos del cliente para borrar sus archivos físicos en Storage
+      const { data: clientEvents } = await supabase.from('events').select('id').eq('client_id', clientId);
+      
+      if (clientEvents && clientEvents.length > 0) {
+        for (const event of clientEvents) {
+          const buckets = ['images', 'videos'];
+          for (const bucket of buckets) {
+            const { data: files } = await supabase.storage.from(bucket).list(event.id);
+            if (files && files.length > 0) {
+              const pathsToDelete = files.map(f => `${event.id}/${f.name}`);
+              await supabase.storage.from(bucket).remove(pathsToDelete);
+            }
+          }
+        }
+      }
+
+      // 2. Borrar el usuario desde la base de datos (RPC)
+      const { error } = await supabase.rpc('admin_delete_user', { p_user_id: clientId });
+      if (error) {
+        if (error.message.includes('function admin_delete_user does not exist')) {
+            throw new Error("Falta ejecutar la función SQL admin_delete_user en Supabase.");
+        }
+        throw error;
+      }
+
+      alert('✅ Cliente y todos sus datos eliminados correctamente.');
+      fetchDashboardData();
+    } catch (error: any) {
+      console.error(error);
+      alert('Error al eliminar cliente: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -258,6 +302,14 @@ export const SuperAdminDashboard = () => {
                             title="Entrar como este cliente"
                           >
                             <ExternalLink size={16} />
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleDeleteClient(client.id, client.full_name || 'Sin Nombre')}
+                            className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-all ml-2"
+                            title="Eliminar cliente definitivamente"
+                          >
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
