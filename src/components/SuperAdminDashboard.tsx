@@ -41,8 +41,7 @@ export const SuperAdminDashboard = () => {
       const { data: profilesData } = await supabase
         .from('profiles')
         .select('*')
-        .neq('role', 'superadmin')
-        .order('created_at', { ascending: false });
+        .neq('role', 'superadmin');
         
       if (profilesData) setClients(profilesData);
 
