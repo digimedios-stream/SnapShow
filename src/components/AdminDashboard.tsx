@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
 import { LiveMonitor } from './LiveMonitor';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
@@ -31,6 +32,8 @@ export const AdminDashboard = () => {
   const [showAutoApproveWarning, setShowAutoApproveWarning] = useState(false);
   const [togglingAutoApprove, setTogglingAutoApprove] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isInstallable, installPWA } = usePWAInstall();
+
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -492,6 +495,12 @@ export const AdminDashboard = () => {
           ))}
           <button onClick={() => { const name = prompt('Nombre del nuevo evento:'); if (name) handleCreateEvent(name); }} className="w-full mt-4 border border-dashed border-white/10 p-4 rounded-xl text-white/20 hover:text-indigo-400 flex items-center justify-center gap-2 group italic text-xs capitalize transition-all active:scale-95"><Plus size={14} /> Nuevo Evento</button>
         </nav>
+
+        {isInstallable && (
+          <button onClick={installPWA} className="mt-6 flex justify-center items-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 hover:scale-[1.02] transition-all border border-indigo-400/30">
+            <Download size={16} /> Instalar App
+          </button>
+        )}
 
         {isAdmin && localStorage.getItem('impersonate_client_id') && (
           <button onClick={() => {
