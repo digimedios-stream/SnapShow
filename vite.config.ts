@@ -16,7 +16,14 @@ export default defineConfig({
         theme_color: '#0a0a0a',
         background_color: '#0a0a0a',
         display: 'standalone',
+        start_url: '/',
         icons: [
+          {
+            src: 'icon-512x512.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
           {
             src: 'icon-512x512.png',
             sizes: '512x512',
