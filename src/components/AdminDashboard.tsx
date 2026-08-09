@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle, ShieldCheck, ShieldOff, Zap, ArrowLeft, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import imageCompression from 'browser-image-compression';
 import { SettingsPanel } from './SettingsPanel';
 import { ThemeOnboarding } from './ThemeOnboarding';
 import { LiveMonitor } from './LiveMonitor';
@@ -281,16 +282,32 @@ export const AdminDashboard = () => {
     if (!selectedEventId) return;
     setIsUploading(true);
     
+    let fileToUpload: File | Blob = file;
     const isVideo = file.type.startsWith('video/');
+    
+    if (!isVideo && file.type.startsWith('image/')) {
+      try {
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          fileType: 'image/webp'
+        };
+        fileToUpload = await imageCompression(file, options);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+      }
+    }
+
     const bucket = isVideo ? 'videos' : 'images';
-    const fileExt = file.name.split('.').pop() || (isVideo ? 'mp4' : 'jpg');
+    const fileExt = isVideo ? (file.name.split('.').pop() || 'mp4') : 'webp';
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `${selectedEventId}/${fileName}`;
 
     try {
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(filePath, file);
+        .upload(filePath, fileToUpload);
 
       if (uploadError) throw uploadError;
 

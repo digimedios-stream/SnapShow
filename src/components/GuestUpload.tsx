@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
+import imageCompression from 'browser-image-compression';
 import { Camera, Send, CheckCircle2, Loader2, Image as ImageIcon, Video, MessageSquare, X, RotateCw, Play, Trash2, Check } from 'lucide-react';
 
 type ViewState = 'menu' | 'camera' | 'gallery' | 'message' | 'preview';
@@ -177,14 +178,32 @@ export const GuestUpload = () => {
     setError(null);
 
     try {
-      const fileExt = capturedMedia.type === 'video' ? 'mp4' : 'jpg';
+      let blobToUpload: Blob = capturedMedia.blob;
+
+      if (capturedMedia.type === 'image') {
+        try {
+          // browser-image-compression needs a File object
+          const file = new File([capturedMedia.blob], "photo.jpg", { type: capturedMedia.blob.type || 'image/jpeg' });
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+            fileType: 'image/webp' as string
+          };
+          blobToUpload = await imageCompression(file, options);
+        } catch (error) {
+          console.error('Error compressing image:', error);
+        }
+      }
+
+      const fileExt = capturedMedia.type === 'video' ? 'mp4' : 'webp';
       const fileName = `${Math.random()}.${fileExt}`;
       const bucket = capturedMedia.type === 'video' ? 'videos' : 'images';
       const filePath = `${eventId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(filePath, capturedMedia.blob);
+        .upload(filePath, blobToUpload);
 
       if (uploadError) throw uploadError;
 
