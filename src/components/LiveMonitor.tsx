@@ -67,10 +67,10 @@ export const LiveMonitor = ({ eventId, onClose }: LiveMonitorProps) => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="fixed left-6 top-[55%] -translate-y-1/2 w-[272px] aspect-video glass border border-white/10 rounded-2xl shadow-xl overflow-hidden flex flex-col z-40"
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.9 }}
+      className="fixed bottom-8 left-[350px] w-[320px] aspect-video glass border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col z-[100]"
     >
       <div className="absolute top-2 left-2 z-20 bg-red-600 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest animate-pulse flex items-center gap-1">
         <div className="w-1 h-1 bg-white rounded-full" />
