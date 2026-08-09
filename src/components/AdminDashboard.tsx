@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle, ShieldCheck, ShieldOff, Zap, ArrowLeft } from 'lucide-react';
+import { LogOut, Plus, Image as ImageIcon, Video, MessageSquare, Settings, ExternalLink, Trash2, Sparkles, Link as LinkIcon, Share2, Check, Download, Loader2, Printer, RefreshCw, Monitor, Play, X, AlertTriangle, ShieldCheck, ShieldOff, Zap, ArrowLeft, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { SettingsPanel } from './SettingsPanel';
@@ -30,7 +30,7 @@ export const AdminDashboard = () => {
   const [autoApprove, setAutoApprove] = useState(false);
   const [showAutoApproveWarning, setShowAutoApproveWarning] = useState(false);
   const [togglingAutoApprove, setTogglingAutoApprove] = useState(false);
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -455,11 +455,24 @@ export const AdminDashboard = () => {
 
   return (
     <div className="h-screen bg-[#0a0a0a] text-white flex overflow-hidden">
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {currentEvent && onboardingFinished === false && (
         <ThemeOnboarding eventId={currentEvent.id} initialName={currentEvent.name} onComplete={() => { setOnboardingFinished(true); window.location.reload(); }} />
       )}
 
-      <aside className="w-80 border-r border-white/10 p-6 flex flex-col">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-80 bg-[#0a0a0a] border-r border-white/10 p-6 flex flex-col transform transition-transform duration-300 md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-center gap-0 mb-10 px-2">
           {/* Logo (Símbolo) */}
           <img src="/hero_phone.png" alt="Logo" style={{ height: '72px' }} className="w-auto object-contain drop-shadow-[0_0_15px_rgba(99,102,241,0.2)]" />
@@ -511,7 +524,13 @@ export const AdminDashboard = () => {
         </footer>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between mb-8 pb-4 border-b border-white/10">
+          <img src="/logo_text.png" alt="SnapShow" className="h-8 object-contain" />
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 glass rounded-xl"><Menu size={20} /></button>
+        </div>
+
         {!selectedEventId ? (
           <div className="h-full flex flex-col items-center justify-center text-center max-w-xl mx-auto">
             <div className="p-8 bg-indigo-500/5 rounded-full mb-8 animate-pulse"><Sparkles className="text-indigo-500" size={64} /></div>
@@ -525,7 +544,7 @@ export const AdminDashboard = () => {
                 <h1 className="text-3xl font-bold tracking-tight">{currentEvent?.name}</h1>
                 <p className="text-white/40 text-[10px] uppercase font-black tracking-widest mt-1">Dash Control</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 md:gap-3">
                 <button onClick={openPopOut} className="flex items-center gap-2 glass px-4 py-2 text-purple-400 font-bold text-sm hover:bg-white/5 transition-all"><Monitor size={16} /> Pantalla</button>
                 <button 
                   onClick={() => {
